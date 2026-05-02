@@ -851,7 +851,7 @@ body {
 </nav>
 
 <script>
-const APP_VER = '1.1.5';
+const APP_VER = '1.1.6';
 
 const MACHINES=[
   {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100, color:'purple'},
@@ -882,7 +882,7 @@ let calYear,calMonth,calSelected;
 
 function saveLogs(){localStorage.setItem('czlogs_'+APP_VER,JSON.stringify(logs));}
 function saveLastSel(){localStorage.setItem('czlast_'+APP_VER,JSON.stringify(lastSel));}
-function todayStr(){return new Date().toISOString().slice(0,10);}
+function todayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function nowTimeStr(){const n=new Date();return`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;}
 
 const STEPS=['machine','cardio-load','load','level','duration','reps','sets','confirm'];
@@ -1405,8 +1405,9 @@ function initExport(){
 }
 function setRange(days){
   const to=new Date();const from=new Date();from.setDate(from.getDate()-days+1);
-  document.getElementById('csv-from').value=from.toISOString().slice(0,10);
-  document.getElementById('csv-to').value=to.toISOString().slice(0,10);
+  const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  document.getElementById('csv-from').value=fmt(from);
+  document.getElementById('csv-to').value=fmt(to);
   updateCsvCount();
 }
 function setRangeAll(){
