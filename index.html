@@ -35,6 +35,17 @@
   --radius: 14px;
   --radius-sm: 9px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* machine colors */
+  --mc-purple:rgba(127,119,221,0.18); --mc-purple-bd:rgba(127,119,221,0.5); --mc-purple-tx:#AFA9EC;
+  --mc-pink:rgba(212,83,126,0.18);    --mc-pink-bd:rgba(212,83,126,0.5);    --mc-pink-tx:#ED93B1;
+  --mc-coral:rgba(216,90,48,0.18);    --mc-coral-bd:rgba(216,90,48,0.5);    --mc-coral-tx:#F0997B;
+  --mc-teal:rgba(29,158,117,0.18);    --mc-teal-bd:rgba(29,158,117,0.5);    --mc-teal-tx:#5DCAA5;
+  --mc-blue:rgba(55,138,221,0.18);    --mc-blue-bd:rgba(55,138,221,0.5);    --mc-blue-tx:#85B7EB;
+  --mc-cyan:rgba(34,211,238,0.15);    --mc-cyan-bd:rgba(34,211,238,0.45);   --mc-cyan-tx:#67E8F9;
+  --mc-amber:rgba(186,117,23,0.18);   --mc-amber-bd:rgba(186,117,23,0.5);   --mc-amber-tx:#EF9F27;
+  --mc-red:rgba(226,75,74,0.18);      --mc-red-bd:rgba(226,75,74,0.5);      --mc-red-tx:#F09595;
+  --mc-green:rgba(99,153,34,0.18);    --mc-green-bd:rgba(99,153,34,0.5);    --mc-green-tx:#97C459;
+  --mc-lime:rgba(132,204,22,0.15);    --mc-lime-bd:rgba(132,204,22,0.45);   --mc-lime-tx:#BEF264;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body {
@@ -334,6 +345,25 @@ body {
 .confirm-row:last-child { border-bottom: none; }
 .confirm-label { color: var(--text3); font-weight: 600; }
 .confirm-val { color: var(--text); font-weight: 700; }
+.confirm-edit-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 4px 10px 4px 12px;
+  color: var(--text); font-weight: 700; font-size: 14px;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+}
+.confirm-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+.confirm-edit-btn .edit-icon { font-size: 11px; color: var(--text3); }
+.confirm-edit-btn:hover .edit-icon { color: var(--accent); }
+.cf-edit-panel {
+  background: var(--surface2);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 14px 16px 10px;
+  margin-bottom: 0;
+}
+.cf-edit-inner { animation: slideDown 0.12s ease; }
+@keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
 
 /* Action buttons */
 .action-row { display: flex; gap: 10px; }
@@ -768,7 +798,10 @@ body {
       <div class="cal-month-label" id="cal-month-label"></div>
       <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
     </div>
-    <div class="cal-legend"><span class="cal-legend-dot"></span>記録あり</div>
+    <div class="cal-legend">
+      <span class="cal-legend-dot"></span>記録あり
+      <span style="margin-left:auto;font-size:12px;font-weight:700;color:var(--accent)" id="cal-month-count"></span>
+    </div>
     <div class="cal-grid" id="cal-grid"></div>
     <div id="cal-popup-area"></div>
   </div>
@@ -818,19 +851,19 @@ body {
 </nav>
 
 <script>
-const APP_VER = '1.0.0';
+const APP_VER = '1.1.5';
 
 const MACHINES=[
-  {id:'run',     name:'ランニングマシン',  icon:'🏃', type:'cardio'},
-  {id:'bike',    name:'エクササイズバイク', icon:'🚴', type:'cardio'},
-  {id:'chest',   name:'チェストプレス',   icon:'🏋️', type:'weight', max:80},
-  {id:'lat',     name:'ラットプルダウン',  icon:'⬇️', type:'weight', max:60},
-  {id:'shoulder',name:'ショルダープレス',  icon:'🤸', type:'weight', max:50},
-  {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100},
-  {id:'adduct',  name:'アダクション',     icon:'🔀', type:'weight', max:80},
-  {id:'abduct',  name:'アブダクション',   icon:'↔️', type:'weight', max:80},
-  {id:'abs',     name:'アブベンチ',       icon:'🧘', type:'abslevel'},
-  {id:'bicep',   name:'バイセップスカール',icon:'💪', type:'weight', max:40},
+  {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100, color:'purple'},
+  {id:'adduct',  name:'アダクション',     icon:'🔀', type:'weight', max:80,  color:'pink'},
+  {id:'abduct',  name:'アブダクション',   icon:'↔️', type:'weight', max:80,  color:'coral'},
+  {id:'abs',     name:'アブベンチ',       icon:'🧘', type:'abslevel',         color:'teal'},
+  {id:'chest',   name:'チェストプレス',   icon:'🏋️', type:'weight', max:80,  color:'blue'},
+  {id:'lat',     name:'ラットプルダウン',  icon:'⬇️', type:'weight', max:60,  color:'cyan'},
+  {id:'shoulder',name:'ショルダープレス',  icon:'🤸', type:'weight', max:50,  color:'amber'},
+  {id:'bicep',   name:'バイセップスカール',icon:'💪', type:'weight', max:40,  color:'red'},
+  {id:'run',     name:'ランニングマシン',  icon:'🏃', type:'cardio',           color:'green'},
+  {id:'bike',    name:'エクササイズバイク',icon:'🚴', type:'cardio',           color:'lime'},
 ];
 const CARDIO_LOADS=[5,10,15,20,25,30];
 const ABS_SUBS={低:'ゆっくり',中:'標準',高:'きつめ'};
@@ -844,9 +877,11 @@ function mObj(id){return MACHINES.find(x=>x.id===id)||{icon:'',name:id,type:'wei
 
 let logs=JSON.parse(localStorage.getItem('czlogs_'+APP_VER)||'[]');
 let cur={machine:null,load:null,reps:null,sets:null};
+let lastSel=JSON.parse(localStorage.getItem('czlast_'+APP_VER)||'{}');
 let calYear,calMonth,calSelected;
 
 function saveLogs(){localStorage.setItem('czlogs_'+APP_VER,JSON.stringify(logs));}
+function saveLastSel(){localStorage.setItem('czlast_'+APP_VER,JSON.stringify(lastSel));}
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function nowTimeStr(){const n=new Date();return`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;}
 
@@ -895,23 +930,39 @@ function showView(v,btn){
 }
 
 function pickMachine(m,btn){
-  cur={machine:m.id,load:null,reps:null,sets:null};
+  const prev=lastSel[m.id]||{};
+  cur={machine:m.id, load:prev.load??null, reps:prev.reps??null, sets:prev.sets??null};
   document.querySelectorAll('.machine-btn').forEach(el=>el.classList.remove('selected'));
   btn.classList.add('selected');
+  const hasFull=cur.load!==null && cur.reps!==null && cur.sets!==null;
   if(m.type==='cardio'){
     document.getElementById('bc-m-cardio').textContent=m.name;
     renderCardioLoadGrid();
-    setTimeout(()=>initStep('cardio-load'),100);
+    if(hasFull){ setTimeout(()=>showConfirm(),100); }
+    else { setTimeout(()=>initStep('cardio-load'),100); }
   } else if(m.type==='abslevel'){
     document.getElementById('bc-m-level').textContent=m.name;
     document.getElementById('lev-sub-low').textContent=ABS_SUBS['低'];
     document.getElementById('lev-sub-mid').textContent=ABS_SUBS['中'];
     document.getElementById('lev-sub-high').textContent=ABS_SUBS['高'];
-    setTimeout(()=>initStep('level'),100);
+    setTimeout(()=>{
+      if(hasFull){
+        showConfirm();
+      } else {
+        initStep('level');
+        if(prev.load){
+          document.querySelectorAll('.lev-btn').forEach(b=>{
+            if(b.querySelector('span:nth-child(2)').textContent===prev.load)
+              b.classList.add('selected');
+          });
+        }
+      }
+    },100);
   } else {
     document.getElementById('bc-m-load').textContent=m.name;
     renderWeightGrid(m);
-    setTimeout(()=>initStep('load'),100);
+    if(hasFull){ setTimeout(()=>showConfirm(),100); }
+    else { setTimeout(()=>initStep('load'),100); }
   }
 }
 
@@ -919,6 +970,7 @@ function renderWeightGrid(m){
   const g=document.getElementById('load-grid');g.innerHTML='';
   makeWeights(m.max||60).forEach(v=>{
     const b=document.createElement('button');b.className='num-btn';b.textContent=v+'kg';
+    if(cur.load===v) b.classList.add('selected');
     b.onclick=()=>pickLoad(v,b);g.appendChild(b);
   });
   document.getElementById('load-custom').value='';
@@ -928,6 +980,7 @@ function renderCardioLoadGrid(){
   const g=document.getElementById('cardio-load-grid');g.innerHTML='';
   CARDIO_LOADS.forEach(v=>{
     const b=document.createElement('button');b.className='num-btn';b.textContent=v;
+    if(cur.load===v) b.classList.add('selected');
     b.onclick=()=>pickCardioLoad(v,b);g.appendChild(b);
   });
 }
@@ -971,6 +1024,7 @@ function renderDurationGrid(){
   const g=document.getElementById('duration-grid');g.innerHTML='';
   DURATIONS.forEach(v=>{
     const b=document.createElement('button');b.className='num-btn';b.textContent=v+'分';
+    if(cur.reps===v) b.classList.add('selected');
     b.onclick=()=>pickDuration(v,b);g.appendChild(b);
   });
   document.getElementById('duration-custom').value='';
@@ -1008,6 +1062,7 @@ function renderRepsGrid(m){
   const g=document.getElementById('reps-grid');g.innerHTML='';
   reps.forEach(r=>{
     const b=document.createElement('button');b.className='num-btn';b.textContent=r+'回';
+    if(cur.reps===r) b.classList.add('selected');
     b.onclick=()=>pickReps(r,b);g.appendChild(b);
   });
   document.getElementById('reps-custom').value='';
@@ -1045,6 +1100,7 @@ function renderSetsGrid(){
   const g=document.getElementById('sets-grid');g.innerHTML='';
   SETS.forEach(s=>{
     const b=document.createElement('button');b.className='num-btn';b.textContent=s+'セット';
+    if(cur.sets===s) b.classList.add('selected');
     b.onclick=()=>pickSets(s,b);g.appendChild(b);
   });
   document.getElementById('sets-custom').value='';
@@ -1062,28 +1118,153 @@ function confirmCustomSets(){
 }
 
 function showConfirm(){
-  const m=mObj(cur.machine);const isCardio=m.type==='cardio';const isAbs=m.type==='abslevel';
-  let rows=[];
-  rows.push(`<div class="confirm-row"><span class="confirm-label">マシン</span><span class="confirm-val">${m.icon} ${m.name}</span></div>`);
-  if(isCardio){
-    rows.push(`<div class="confirm-row"><span class="confirm-label">負荷</span><span class="confirm-val">${cur.load}</span></div>`);
-  } else if(isAbs){
-    rows.push(`<div class="confirm-row"><span class="confirm-label">負荷</span><span class="confirm-val">${cur.load}</span></div>`);
-  } else {
-    rows.push(`<div class="confirm-row"><span class="confirm-label">重量</span><span class="confirm-val">${cur.load} kg</span></div>`);
-  }
-  const trLabel=isCardio?'時間':'回数';
-  const trVal=isCardio?cur.reps+'分':cur.reps+'回';
-  rows.push(`<div class="confirm-row"><span class="confirm-label">${trLabel}</span><span class="confirm-val">${trVal}</span></div>`);
-  rows.push(`<div class="confirm-row"><span class="confirm-label">セット数</span><span class="confirm-val">${cur.sets} セット</span></div>`);
-  document.getElementById('confirm-card').innerHTML=rows.join('');
+  renderConfirmCard();
   initStep('confirm');
+}
+
+function renderConfirmCard(){
+  const m=mObj(cur.machine);const isCardio=m.type==='cardio';const isAbs=m.type==='abslevel';
+  const loadLabel=isCardio||isAbs?'負荷':'重量';
+  const loadVal=isCardio?String(cur.load):isAbs?String(cur.load):cur.load+'kg';
+  const repsLabel=isCardio?'時間':'回数';
+  const repsVal=isCardio?cur.reps+'分':cur.reps+'回';
+
+  document.getElementById('confirm-card').innerHTML=`
+    <div class="confirm-row"><span class="confirm-label">マシン</span><span class="confirm-val">${m.icon} ${m.name}</span></div>
+    <div class="confirm-row" id="cf-row-load">
+      <span class="confirm-label">${loadLabel}</span>
+      <button class="confirm-edit-btn" onclick="cfOpenEdit('load')"><span>${loadVal}</span><span class="edit-icon">✎</span></button>
+    </div>
+    <div id="cf-edit-load" class="cf-edit-panel" style="display:none"></div>
+    <div class="confirm-row" id="cf-row-reps">
+      <span class="confirm-label">${repsLabel}</span>
+      <button class="confirm-edit-btn" onclick="cfOpenEdit('reps')"><span>${repsVal}</span><span class="edit-icon">✎</span></button>
+    </div>
+    <div id="cf-edit-reps" class="cf-edit-panel" style="display:none"></div>
+    <div class="confirm-row" id="cf-row-sets">
+      <span class="confirm-label">セット数</span>
+      <button class="confirm-edit-btn" onclick="cfOpenEdit('sets')"><span>${cur.sets}セット</span><span class="edit-icon">✎</span></button>
+    </div>
+    <div id="cf-edit-sets" class="cf-edit-panel" style="display:none"></div>`;
+}
+
+function cfOpenEdit(field){
+  // 他を閉じる
+  ['load','reps','sets'].forEach(f=>{
+    const p=document.getElementById('cf-edit-'+f);
+    if(p) p.style.display='none';
+  });
+  const m=mObj(cur.machine);const isCardio=m.type==='cardio';const isAbs=m.type==='abslevel';
+  const panel=document.getElementById('cf-edit-'+field);
+  if(!panel) return;
+
+  let html='<div class="cf-edit-inner">';
+  if(field==='load'){
+    if(isCardio){
+      // 負荷数値グリッド
+      const vals=[5,10,15,20,25,30];
+      html+=`<div class="slabel" style="margin-bottom:8px">負荷を選ぶ</div><div class="num-grid" style="margin-bottom:8px">`;
+      vals.forEach(v=>{
+        const sel=cur.load===v?'selected':'';
+        html+=`<button class="num-btn ${sel}" onclick="cfPick('load',${v},this)">${v}</button>`;
+      });
+      html+=`</div>`;
+    } else if(isAbs){
+      // 低中高
+      html+=`<div class="slabel" style="margin-bottom:8px">負荷を選ぶ</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">`;
+      [{v:'低',icon:'🟢',sub:'ゆっくり'},{v:'中',icon:'🟡',sub:'標準'},{v:'高',icon:'🔴',sub:'きつめ'}].forEach(({v,icon,sub})=>{
+        const sel=cur.load===v?'selected':'';
+        html+=`<button class="lev-btn ${sel}" onclick="cfPickLevel('${v}',this)">
+          <span class="lev-icon">${icon}</span><span class="lev-name">${v}</span><span class="lev-sub">${sub}</span>
+        </button>`;
+      });
+      html+=`</div>`;
+    } else {
+      // 重量グリッド
+      const weights=[];for(let v=5;v<=(m.max||60);v+=5)weights.push(v);
+      html+=`<div class="slabel" style="margin-bottom:8px">重量を選ぶ (kg)</div><div class="num-grid" style="margin-bottom:8px">`;
+      weights.forEach(v=>{
+        const sel=cur.load===v?'selected':'';
+        html+=`<button class="num-btn ${sel}" onclick="cfPick('load',${v},this)">${v}kg</button>`;
+      });
+      html+=`</div><div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="cf-inp-load" class="custom-input" placeholder="直接入力" style="width:110px">
+        <span style="font-size:13px;color:var(--text2)">kg</span>
+        <button class="btn-decide" onclick="cfPickCustom('load')">決定</button>
+      </div>`;
+    }
+  } else if(field==='reps'){
+    if(isCardio){
+      const durs=[5,10,15,20,25,30,40,50,60];
+      html+=`<div class="slabel" style="margin-bottom:8px">時間を選ぶ (分)</div><div class="num-grid" style="margin-bottom:8px">`;
+      durs.forEach(v=>{
+        const sel=cur.reps===v?'selected':'';
+        html+=`<button class="num-btn ${sel}" onclick="cfPick('reps',${v},this)">${v}分</button>`;
+      });
+      html+=`</div><div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="cf-inp-reps" class="custom-input" placeholder="直接入力" style="width:110px">
+        <span style="font-size:13px;color:var(--text2)">分</span>
+        <button class="btn-decide" onclick="cfPickCustom('reps')">決定</button>
+      </div>`;
+    } else {
+      const reps=isAbs?[10,15,20,25,30,35,40,50]:[5,8,10,12,15,20,25,30];
+      html+=`<div class="slabel" style="margin-bottom:8px">回数を選ぶ (回)</div><div class="num-grid" style="margin-bottom:8px">`;
+      reps.forEach(v=>{
+        const sel=cur.reps===v?'selected':'';
+        html+=`<button class="num-btn ${sel}" onclick="cfPick('reps',${v},this)">${v}回</button>`;
+      });
+      html+=`</div><div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="cf-inp-reps" class="custom-input" placeholder="直接入力" style="width:110px">
+        <span style="font-size:13px;color:var(--text2)">回</span>
+        <button class="btn-decide" onclick="cfPickCustom('reps')">決定</button>
+      </div>`;
+    }
+  } else if(field==='sets'){
+    html+=`<div class="slabel" style="margin-bottom:8px">セット数を選ぶ</div><div class="num-grid" style="margin-bottom:8px">`;
+    [1,2,3,4,5].forEach(v=>{
+      const sel=cur.sets===v?'selected':'';
+      html+=`<button class="num-btn ${sel}" onclick="cfPick('sets',${v},this)">${v}セット</button>`;
+    });
+    html+=`</div><div style="display:flex;align-items:center;gap:8px">
+      <input type="number" id="cf-inp-sets" class="custom-input" placeholder="直接入力" style="width:110px">
+      <span style="font-size:13px;color:var(--text2)">セット</span>
+      <button class="btn-decide" onclick="cfPickCustom('sets')">決定</button>
+    </div>`;
+  }
+  html+='</div>';
+  panel.innerHTML=html;
+  panel.style.display='block';
+}
+
+function cfPick(field, val, btn){
+  if(field==='load') cur.load=val;
+  if(field==='reps') cur.reps=val;
+  if(field==='sets') cur.sets=val;
+  renderConfirmCard();
+}
+
+function cfPickLevel(val, btn){
+  cur.load=val;
+  renderConfirmCard();
+}
+
+function cfPickCustom(field){
+  const inp=document.getElementById('cf-inp-'+field);
+  const v=field==='sets'?parseInt(inp.value):parseFloat(inp.value);
+  if(!v||v<=0){alert('正しい値を入力してください');return;}
+  if(field==='load') cur.load=v;
+  if(field==='reps') cur.reps=v;
+  if(field==='sets') cur.sets=v;
+  renderConfirmCard();
 }
 
 function saveLog(){
   const m=mObj(cur.machine);
   logs.push({date:todayStr(),time:nowTimeStr(),machine:cur.machine,machineName:m.name,machineIcon:m.icon,load:cur.load,type:m.type,reps:cur.reps,sets:cur.sets,id:Date.now()});
-  saveLogs();cur={machine:null,load:null,reps:null,sets:null};
+  saveLogs();
+  lastSel[cur.machine]={load:cur.load,reps:cur.reps,sets:cur.sets};
+  saveLastSel();
+  cur={machine:null,load:null,reps:null,sets:null};
   initStep('machine');renderTodayLogs();
 }
 function deleteLog(id){logs=logs.filter(l=>l.id!==id);saveLogs();renderTodayLogs();}
@@ -1095,14 +1276,23 @@ function logDetailStr(l){
   return`${l.load}kg × ${l.reps}回 × ${l.sets}セット`;
 }
 
+function mColor(machineId){
+  const m=mObj(machineId);const c=m.color||'blue';
+  return`background:var(--mc-${c});border-color:var(--mc-${c}-bd);`;
+}
+function mNameColor(machineId){
+  const m=mObj(machineId);const c=m.color||'blue';
+  return`color:var(--mc-${c}-tx);`;
+}
+
 function renderTodayLogs(){
-  const today=todayStr();const tl=logs.filter(l=>l.date===today);
+  const today=todayStr();const tl=[...logs.filter(l=>l.date===today)].reverse();
   const sec=document.getElementById('today-log-section');
   if(!tl.length){sec.innerHTML='';return;}
   sec.innerHTML=`<div class="log-list-title">今日の記録（${tl.length}件）</div>`+
-    tl.map(l=>`<div class="log-card">
+    tl.map(l=>`<div class="log-card" style="${mColor(l.machine)}">
       <div style="flex:1">
-        <div class="log-machine-name">${l.machineIcon||''} ${l.machineName}</div>
+        <div class="log-machine-name" style="${mNameColor(l.machine)}">${l.machineIcon||''} ${l.machineName}</div>
         <div class="log-detail">${logDetailStr(l)}</div>
         <div class="log-time-badge">${l.time||''}</div>
       </div>
@@ -1118,11 +1308,12 @@ function renderHistory(){
   c.innerHTML=dates.map(d=>{
     const [y,mo,day]=d.split('-');
     const dow=['日','月','火','水','木','金','土'][new Date(d).getDay()];
+    const dayLogs=[...grouped[d]].reverse();
     return`<div style="margin-bottom:20px">
       <div class="history-date-header">${y}/${mo}/${day}（${dow}）</div>
-      ${grouped[d].map(l=>`<div class="log-card">
+      ${dayLogs.map(l=>`<div class="log-card" style="${mColor(l.machine)}">
         <div style="flex:1">
-          <div class="log-machine-name">${l.machineIcon||''} ${l.machineName}</div>
+          <div class="log-machine-name" style="${mNameColor(l.machine)}">${l.machineIcon||''} ${l.machineName}</div>
           <div class="log-detail">${logDetailStr(l)}</div>
           <div class="log-time-badge">${l.time||''}</div>
         </div>
@@ -1146,6 +1337,10 @@ function renderCalendar(){
   const days=new Date(calYear,calMonth+1,0).getDate();
   const todayFull=todayStr();
   const logDates=new Set(logs.map(l=>l.date));
+  // 月の使用日数カウント
+  const prefix=`${calYear}-${String(calMonth+1).padStart(2,'0')}-`;
+  const monthDays=new Set(logs.filter(l=>l.date.startsWith(prefix)).map(l=>l.date));
+  document.getElementById('cal-month-count').textContent=`${monthDays.size}日トレーニング`;
   for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
   for(let d=1;d<=days;d++){
     const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -1173,9 +1368,9 @@ function showCalPopup(ds){
       <button class="popup-close" onclick="document.getElementById('cal-popup-area').innerHTML='';calSelected=null;renderCalendar()">閉じる</button>
     </div>
     ${timeRange?`<div class="popup-time-range">トレーニング時間：${timeRange}</div>`:''}
-    ${dl.map(l=>`<div class="log-card" style="margin-bottom:6px">
+    ${dl.map(l=>`<div class="log-card" style="margin-bottom:6px;${mColor(l.machine)}">
       <div style="flex:1">
-        <div class="log-machine-name">${l.machineIcon||''} ${l.machineName}</div>
+        <div class="log-machine-name" style="${mNameColor(l.machine)}">${l.machineIcon||''} ${l.machineName}</div>
         <div class="log-detail">${logDetailStr(l)}</div>
         <div class="log-time-badge">${l.time||''}</div>
       </div>
@@ -1254,7 +1449,9 @@ function downloadCSV(){
 const mg=document.getElementById('machine-grid');
 MACHINES.forEach(m=>{
   const b=document.createElement('button');b.className='machine-btn';
-  b.innerHTML=`<span class="machine-icon">${m.icon}</span><span>${m.name}</span>`;
+  const c=m.color||'blue';
+  b.style.cssText=`border-color:var(--mc-${c}-bd)`;
+  b.innerHTML=`<span class="machine-icon">${m.icon}</span><span style="color:var(--mc-${c}-tx)">${m.name}</span>`;
   b.onclick=()=>pickMachine(m,b);mg.appendChild(b);
 });
 const now=new Date();
