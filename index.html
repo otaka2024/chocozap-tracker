@@ -641,6 +641,20 @@ body {
       </div>
     </div>
 
+    <div id="step-cardio-load" style="display:none">
+      <button class="btn-cancel" onclick="cancelAll()">✕ キャンセル</button>
+      <div class="breadcrumb">
+        <span class="bc-item" onclick="backTo('machine')">マシン</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-current" id="bc-m-cardio"></span>
+      </div>
+      <div class="step-box">
+        <div class="step-label">Step 1</div>
+        <div class="step-heading">負荷を選ぶ</div>
+        <div class="num-grid" id="cardio-load-grid"></div>
+      </div>
+    </div>
+
     <div id="step-level" style="display:none">
       <button class="btn-cancel" onclick="cancelAll()">✕ キャンセル</button>
       <div class="breadcrumb">
@@ -676,7 +690,7 @@ body {
       <div class="breadcrumb">
         <span class="bc-item" onclick="backTo('machine')">マシン</span>
         <span class="bc-sep">›</span>
-        <span class="bc-item" onclick="backTo('level')" id="bc-l-dur"></span>
+        <span class="bc-item" onclick="backTo('cardio-load')" id="bc-l-dur"></span>
         <span class="bc-sep">›</span>
         <span class="bc-current">時間</span>
       </div>
@@ -813,7 +827,7 @@ const MACHINES=[
   {id:'abs',     name:'アブベンチ',       icon:'🧘', type:'abslevel'},
   {id:'bicep',   name:'バイセップスカール',icon:'💪', type:'weight', max:40},
 ];
-const CARDIO_SUBS={低:'ウォームアップ',中:'有酸素',高:'インターバル'};
+const CARDIO_LOADS=[5,10,15,20,25,30];
 const ABS_SUBS={低:'ゆっくり',中:'標準',高:'きつめ'};
 const DURATIONS=[5,10,15,20,25,30,40,50,60];
 const REPS_NORMAL=[5,8,10,12,15,20,25,30];
@@ -831,7 +845,7 @@ function saveLogs(){localStorage.setItem('czlogs5',JSON.stringify(logs));}
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function nowTimeStr(){const n=new Date();return`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;}
 
-const STEPS=['machine','load','level','duration','reps','sets','confirm'];
+const STEPS=['machine','cardio-load','load','level','duration','reps','sets','confirm'];
 function initStep(s){STEPS.forEach(x=>{document.getElementById('step-'+x).style.display=x===s?'block':'none';});}
 
 function cancelAll(){
@@ -842,6 +856,11 @@ function cancelAll(){
 
 function backTo(step){
   if(step==='machine'){cancelAll();return;}
+  if(step==='cardio-load'){
+    cur.load=null;cur.reps=null;cur.sets=null;
+    document.querySelectorAll('#cardio-load-grid .num-btn.selected').forEach(el=>el.classList.remove('selected'));
+    initStep('cardio-load');
+  }
   if(step==='level'){
     cur.load=null;cur.reps=null;cur.sets=null;
     document.querySelectorAll('.lev-btn.selected,.num-btn.selected').forEach(el=>el.classList.remove('selected'));
@@ -875,11 +894,9 @@ function pickMachine(m,btn){
   document.querySelectorAll('.machine-btn').forEach(el=>el.classList.remove('selected'));
   btn.classList.add('selected');
   if(m.type==='cardio'){
-    document.getElementById('bc-m-level').textContent=m.name;
-    document.getElementById('lev-sub-low').textContent=CARDIO_SUBS['低'];
-    document.getElementById('lev-sub-mid').textContent=CARDIO_SUBS['中'];
-    document.getElementById('lev-sub-high').textContent=CARDIO_SUBS['高'];
-    setTimeout(()=>initStep('level'),100);
+    document.getElementById('bc-m-cardio').textContent=m.name;
+    renderCardioLoadGrid();
+    setTimeout(()=>initStep('cardio-load'),100);
   } else if(m.type==='abslevel'){
     document.getElementById('bc-m-level').textContent=m.name;
     document.getElementById('lev-sub-low').textContent=ABS_SUBS['低'];
@@ -902,6 +919,23 @@ function renderWeightGrid(m){
   document.getElementById('load-custom').value='';
 }
 
+function renderCardioLoadGrid(){
+  const g=document.getElementById('cardio-load-grid');g.innerHTML='';
+  CARDIO_LOADS.forEach(v=>{
+    const b=document.createElement('button');b.className='num-btn';b.textContent=v;
+    b.onclick=()=>pickCardioLoad(v,b);g.appendChild(b);
+  });
+}
+
+function pickCardioLoad(v,btn){
+  cur.load=v;
+  document.querySelectorAll('#cardio-load-grid .num-btn').forEach(el=>el.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('bc-l-dur').textContent='負荷 '+v;
+  renderDurationGrid();
+  setTimeout(()=>initStep('duration'),100);
+}
+
 function pickLoad(v,btn){
   cur.load=v;
   document.querySelectorAll('#load-grid .num-btn').forEach(el=>el.classList.remove('selected'));
@@ -922,16 +956,10 @@ function pickLevel(level,btn){
   cur.load=level;
   document.querySelectorAll('.lev-btn').forEach(el=>el.classList.remove('selected'));
   btn.classList.add('selected');
-  const m=mObj(cur.machine);
-  document.getElementById('bc-l-dur').textContent='負荷：'+level;
-  if(m.type==='cardio'){
-    renderDurationGrid();
-    setTimeout(()=>initStep('duration'),100);
-  } else {
-    setBcReps();renderRepsGrid(m);
-    document.getElementById('reps-step-label').textContent='Step 2';
-    setTimeout(()=>initStep('reps'),100);
-  }
+  // abslevel only
+  setBcReps();renderRepsGrid(mObj(cur.machine));
+  document.getElementById('reps-step-label').textContent='Step 2';
+  setTimeout(()=>initStep('reps'),100);
 }
 
 function renderDurationGrid(){
@@ -997,8 +1025,8 @@ function setBcSets(){
   const m=mObj(cur.machine);const isCardio=m.type==='cardio';const isAbs=m.type==='abslevel';
   let html=`<span class="bc-item" onclick="backTo('machine')">マシン</span><span class="bc-sep">›</span>`;
   if(cur.load!=null){
-    const lbl=(isCardio||isAbs)?'負荷：'+cur.load:cur.load+'kg';
-    const step=(isCardio||isAbs)?'level':'load';
+    const lbl=isCardio?'負荷 '+cur.load:isAbs?'負荷：'+cur.load:cur.load+'kg';
+    const step=isCardio?'cardio-load':isAbs?'level':'load';
     html+=`<span class="bc-item" onclick="backTo('${step}')">${lbl}</span><span class="bc-sep">›</span>`;
   }
   if(cur.reps!=null){
@@ -1032,7 +1060,9 @@ function showConfirm(){
   const m=mObj(cur.machine);const isCardio=m.type==='cardio';const isAbs=m.type==='abslevel';
   let rows=[];
   rows.push(`<div class="confirm-row"><span class="confirm-label">マシン</span><span class="confirm-val">${m.icon} ${m.name}</span></div>`);
-  if(isCardio||isAbs){
+  if(isCardio){
+    rows.push(`<div class="confirm-row"><span class="confirm-label">負荷</span><span class="confirm-val">${cur.load}</span></div>`);
+  } else if(isAbs){
     rows.push(`<div class="confirm-row"><span class="confirm-label">負荷</span><span class="confirm-val">${cur.load}</span></div>`);
   } else {
     rows.push(`<div class="confirm-row"><span class="confirm-label">重量</span><span class="confirm-val">${cur.load} kg</span></div>`);
@@ -1055,7 +1085,7 @@ function deleteLog(id){logs=logs.filter(l=>l.id!==id);saveLogs();renderTodayLogs
 
 function logDetailStr(l){
   const isCardio=l.type==='cardio';const isAbs=l.type==='abslevel';
-  if(isCardio) return`負荷：${l.load} ／ ${l.reps}分 × ${l.sets}セット`;
+  if(isCardio) return`負荷 ${l.load} ／ ${l.reps}分 × ${l.sets}セット`;
   if(isAbs)    return`負荷：${l.load} ／ ${l.reps}回 × ${l.sets}セット`;
   return`${l.load}kg × ${l.reps}回 × ${l.sets}セット`;
 }
@@ -1089,11 +1119,16 @@ function renderHistory(){
         <div style="flex:1">
           <div class="log-machine-name">${l.machineIcon||''} ${l.machineName}</div>
           <div class="log-detail">${logDetailStr(l)}</div>
+          <div class="log-time-badge">${l.time||''}</div>
         </div>
-        <span class="log-time-badge">${l.time||''}</span>
+        <button class="log-delete" onclick="deleteLogFromHistory(${l.id})">削除</button>
       </div>`).join('')}
     </div>`;
   }).join('');
+}
+
+function deleteLogFromHistory(id){
+  logs=logs.filter(l=>l.id!==id);saveLogs();renderHistory();
 }
 
 function renderCalendar(){
@@ -1137,10 +1172,23 @@ function showCalPopup(ds){
       <div style="flex:1">
         <div class="log-machine-name">${l.machineIcon||''} ${l.machineName}</div>
         <div class="log-detail">${logDetailStr(l)}</div>
+        <div class="log-time-badge">${l.time||''}</div>
       </div>
-      <span class="log-time-badge">${l.time||''}</span>
+      <button class="log-delete" onclick="deleteLogFromCalendar(${l.id},'${ds}')">削除</button>
     </div>`).join('')}
   </div></div>`;
+}
+
+function deleteLogFromCalendar(id,ds){
+  logs=logs.filter(l=>l.id!==id);saveLogs();
+  const remaining=logs.filter(l=>l.date===ds);
+  if(remaining.length===0){
+    document.getElementById('cal-popup-area').innerHTML=`<div class="empty-msg">${ds.replace(/-/g,'/')} の記録はありません</div>`;
+    calSelected=null;
+  } else {
+    showCalPopup(ds);
+  }
+  renderCalendar();
 }
 
 function changeMonth(d){
@@ -1183,7 +1231,7 @@ function downloadCSV(){
   const header='日付,時刻,マシン名,負荷/重量,回数/時間,セット数';
   const rows=filtered.map(l=>{
     const isCardio=l.type==='cardio';const isAbs=l.type==='abslevel';
-    const loadVal=(isCardio||isAbs)?'負荷：'+l.load:l.load+'kg';
+    const loadVal=isCardio?'負荷 '+l.load:isAbs?'負荷：'+l.load:l.load+'kg';
     const repsVal=isCardio?l.reps+'分':l.reps+'回';
     return[l.date,l.time||'',l.machineName,loadVal,repsVal,l.sets+'セット'].join(',');
   });
