@@ -851,7 +851,7 @@ body {
 </nav>
 
 <script>
-const APP_VER = '1.1.6';
+const APP_VER = '1.1.7';
 
 const MACHINES=[
   {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100, color:'purple'},
@@ -879,6 +879,30 @@ let logs=JSON.parse(localStorage.getItem('czlogs_'+APP_VER)||'[]');
 let cur={machine:null,load:null,reps:null,sets:null};
 let lastSel=JSON.parse(localStorage.getItem('czlast_'+APP_VER)||'{}');
 let calYear,calMonth,calSelected;
+
+// 過去バージョンのデータを現バージョンに統合
+(function migrateLegacyData(){
+  const ids=new Set(logs.map(l=>l.id));
+  let merged=false;
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith('czlogs_')&&k!=='czlogs_'+APP_VER){
+      const old=JSON.parse(localStorage.getItem(k)||'[]');
+      old.forEach(l=>{if(!ids.has(l.id)){logs.push(l);ids.add(l.id);merged=true;}});
+    }
+  });
+  if(merged){
+    logs.sort((a,b)=>a.date===b.date?a.time.localeCompare(b.time):a.date.localeCompare(b.date));
+    localStorage.setItem('czlogs_'+APP_VER,JSON.stringify(logs));
+  }
+  if(!Object.keys(lastSel).length){
+    Object.keys(localStorage).forEach(k=>{
+      if(k.startsWith('czlast_')&&k!=='czlast_'+APP_VER){
+        const old=JSON.parse(localStorage.getItem(k)||'{}');
+        if(Object.keys(old).length){lastSel=old;localStorage.setItem('czlast_'+APP_VER,JSON.stringify(lastSel));}
+      }
+    });
+  }
+})();
 
 function saveLogs(){localStorage.setItem('czlogs_'+APP_VER,JSON.stringify(logs));}
 function saveLastSel(){localStorage.setItem('czlast_'+APP_VER,JSON.stringify(lastSel));}
