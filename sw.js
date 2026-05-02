@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chocolog-v1';
+const CACHE_NAME = 'chocolog-v1.0.0';
 const ASSETS = [
   './',
   './index.html',

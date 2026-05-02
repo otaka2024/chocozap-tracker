@@ -609,7 +609,10 @@ body {
 
 <header class="app-header">
   <div class="app-logo">ChocoLog <span>広島八木店</span></div>
-  <div class="header-date" id="header-date"></div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+    <div class="header-date" id="header-date"></div>
+    <div style="font-size:10px;color:var(--text3)" id="ver-label"></div>
+  </div>
 </header>
 
 <main class="main-content">
@@ -794,7 +797,7 @@ body {
       <div class="csv-count" id="csv-count"></div>
       <button class="btn-download" onclick="downloadCSV()">⬇ CSVをダウンロード</button>
     </div>
-    <div class="export-note">出力項目：日付 / 時刻 / マシン名 / 負荷・重量 / 回数・時間 / セット数<br>文字コード：UTF-8 BOM付き（Excel対応）</div>
+    <div class="export-note">出力項目：日付 / 時刻 / マシン名 / 負荷・重量 / 回数・時間 / セット数<br>文字コード：UTF-8 BOM付き（Excel対応）<br>ファイル名：chocozap_v<span id="exp-ver"></span>_日時.csv（上書きなし）</div>
   </div>
 
 </main>
@@ -815,15 +818,17 @@ body {
 </nav>
 
 <script>
+const APP_VER = '1.0.0';
+
 const MACHINES=[
   {id:'run',     name:'ランニングマシン',  icon:'🏃', type:'cardio'},
   {id:'bike',    name:'エクササイズバイク', icon:'🚴', type:'cardio'},
-  {id:'chest',   name:'チェストプレス',   icon:'🏋️', type:'weight', max:60},
+  {id:'chest',   name:'チェストプレス',   icon:'🏋️', type:'weight', max:80},
   {id:'lat',     name:'ラットプルダウン',  icon:'⬇️', type:'weight', max:60},
   {id:'shoulder',name:'ショルダープレス',  icon:'🤸', type:'weight', max:50},
   {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100},
-  {id:'adduct',  name:'アダクション',     icon:'🔀', type:'weight', max:50},
-  {id:'abduct',  name:'アブダクション',   icon:'↔️', type:'weight', max:50},
+  {id:'adduct',  name:'アダクション',     icon:'🔀', type:'weight', max:80},
+  {id:'abduct',  name:'アブダクション',   icon:'↔️', type:'weight', max:80},
   {id:'abs',     name:'アブベンチ',       icon:'🧘', type:'abslevel'},
   {id:'bicep',   name:'バイセップスカール',icon:'💪', type:'weight', max:40},
 ];
@@ -837,11 +842,11 @@ const SETS=[1,2,3,4,5];
 function makeWeights(max){const a=[];for(let v=5;v<=max;v+=5)a.push(v);return a;}
 function mObj(id){return MACHINES.find(x=>x.id===id)||{icon:'',name:id,type:'weight'};}
 
-let logs=JSON.parse(localStorage.getItem('czlogs5')||'[]');
+let logs=JSON.parse(localStorage.getItem('czlogs_'+APP_VER)||'[]');
 let cur={machine:null,load:null,reps:null,sets:null};
 let calYear,calMonth,calSelected;
 
-function saveLogs(){localStorage.setItem('czlogs5',JSON.stringify(logs));}
+function saveLogs(){localStorage.setItem('czlogs_'+APP_VER,JSON.stringify(logs));}
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function nowTimeStr(){const n=new Date();return`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;}
 
@@ -1235,11 +1240,13 @@ function downloadCSV(){
     const repsVal=isCardio?l.reps+'分':l.reps+'回';
     return[l.date,l.time||'',l.machineName,loadVal,repsVal,l.sets+'セット'].join(',');
   });
+  const now=new Date();
+  const ts=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
   const csv='\uFEFF'+[header,...rows].join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
-  a.download=`chocozap_${from}_${to}.csv`;a.click();
+  a.download=`chocozap_v${APP_VER}_${ts}.csv`;a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -1253,6 +1260,8 @@ MACHINES.forEach(m=>{
 const now=new Date();
 const DOW=['日','月','火','水','木','金','土'];
 document.getElementById('header-date').textContent=`${now.getMonth()+1}/${now.getDate()}（${DOW[now.getDay()]}）`;
+document.getElementById('ver-label').textContent=`v${APP_VER}`;
+document.getElementById('exp-ver').textContent=APP_VER;
 renderTodayLogs();
 
 if('serviceWorker' in navigator){
