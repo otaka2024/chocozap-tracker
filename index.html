@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ChocoLog">
+<meta name="description" content="チョコザップ広島八木店 トレーニング記録アプリ">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>ChocoLog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #273344;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --accent: #22d3ee;
+  --accent-bg: rgba(34,211,238,0.12);
+  --accent-border: rgba(34,211,238,0.4);
+  --green: #4ade80;
+  --green-bg: rgba(74,222,128,0.12);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.12);
+  --amber: #fbbf24;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior: none;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Header */
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px 10px;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.app-logo {
+  font-family: 'Oswald', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+.app-logo span { color: var(--text2); font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 400; margin-left: 8px; }
+.header-date { font-size: 12px; color: var(--text3); }
+
+/* Main content */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 0;
+  padding-bottom: calc(80px + var(--safe-bottom));
+}
+
+/* Bottom nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 0 8px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  font-size: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+.nav-item.active { color: var(--accent); }
+.nav-icon { font-size: 22px; line-height: 1; }
+
+/* View */
+.view { display: none; }
+.view.active { display: block; }
+
+/* Section title */
+.section-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* Machine grid */
+.machine-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.machine-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.machine-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent-bg);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.machine-btn:active::before { opacity: 1; }
+.machine-btn.selected {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.machine-icon { font-size: 28px; line-height: 1; }
+
+/* Step container */
+.step-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.step-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.step-heading {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.bc-item { color: var(--accent); font-size: 12px; cursor: pointer; }
+.bc-sep { color: var(--text3); font-size: 12px; }
+.bc-current { color: var(--text2); font-size: 12px; }
+
+/* Cancel btn */
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text3);
+  font-size: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.btn-cancel:active { background: var(--surface2); }
+
+/* Number grid */
+.num-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.num-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 4px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+}
+.num-btn:active { transform: scale(0.94); }
+.num-btn.selected {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+/* Level buttons */
+.lev-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.lev-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: all 0.12s;
+}
+.lev-btn:active { transform: scale(0.96); }
+.lev-btn.selected { border-color: var(--accent-border); background: var(--accent-bg); }
+.lev-icon { font-size: 24px; }
+.lev-name { font-size: 16px; font-weight: 800; color: var(--text); }
+.lev-btn.selected .lev-name { color: var(--accent); }
+.lev-sub { font-size: 10px; color: var(--text3); }
+.lev-btn.selected .lev-sub { color: var(--accent); opacity: 0.8; }
+
+/* Custom input row */
+.custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.custom-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+.custom-input::placeholder { color: var(--text3); }
+.custom-input:focus { outline: none; border-color: var(--accent-border); }
+.unit-label { color: var(--text2); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.btn-decide {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  color: var(--accent);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-decide:active { opacity: 0.7; }
+
+/* Confirm card */
+.confirm-summary {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.confirm-row:last-child { border-bottom: none; }
+.confirm-label { color: var(--text3); font-weight: 600; }
+.confirm-val { color: var(--text); font-weight: 700; }
+
+/* Action buttons */
+.action-row { display: flex; gap: 10px; }
+.btn-secondary {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 14px;
+  color: var(--text2);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-primary {
+  flex: 2;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px;
+  color: #0f172a;
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+
+/* Log card */
+.log-list { margin-top: 20px; }
+.log-list-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.log-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.log-machine-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.log-detail { font-size: 13px; color: var(--text2); }
+.log-time-badge {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+.log-delete {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: var(--text3);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.log-delete:active { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+
+/* History */
+.history-date-header {
+  font-family: 'Oswald', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent);
+  padding: 12px 0 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* Calendar */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+}
+.cal-nav-btn {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: var(--text2);
+  font-size: 16px;
+  cursor: pointer;
+}
+.cal-nav-btn:active { background: var(--surface2); }
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: var(--text3);
+}
+.cal-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.cal-head {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  padding: 4px 0;
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  position: relative;
+  transition: all 0.12s;
+}
+.cal-day:active { transform: scale(0.9); }
+.cal-day.empty { cursor: default; pointer-events: none; }
+.cal-day.has-log { background: var(--green); color: #0f172a; font-weight: 800; }
+.cal-day.today { border: 2px solid var(--accent); color: var(--accent); }
+.cal-day.today.has-log { background: var(--green); border-color: var(--accent); color: #0f172a; }
+.cal-day.selected { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Popup */
+.popup-backdrop {
+  background: rgba(0,0,0,0.6);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  margin-top: 12px;
+  backdrop-filter: blur(4px);
+}
+.popup-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.popup-date {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+}
+.popup-time-range {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+.popup-close {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 4px 12px;
+  color: var(--text2);
+  font-size: 13px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* CSV Export */
+.export-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.export-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.date-field label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 4px; font-weight: 600; }
+.date-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 10px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+.date-input:focus { outline: none; border-color: var(--accent-border); }
+.shortcut-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.shortcut-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  color: var(--text2);
+  font-size: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+.shortcut-btn:active { background: var(--accent-bg); color: var(--accent); }
+.csv-count { font-size: 13px; color: var(--text3); margin-bottom: 14px; }
+.btn-download {
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  padding: 16px;
+  color: #0f172a;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+.btn-download:active { opacity: 0.85; }
+.export-note { font-size: 11px; color: var(--text3); line-height: 1.8; }
+
+.empty-msg { font-size: 14px; color: var(--text3); padding: 20px 0; text-align: center; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-logo">ChocoLog <span>広島八木店</span></div>
+  <div class="header-date" id="header-date"></div>
+</header>
+
+<main class="main-content">
+
+  <!-- 記録ビュー -->
+  <div id="view-record" class="view active">
+
+    <div id="step-machine">
+      <div class="section-title">マシンを選ぶ</div>
+      <div class="machine-grid" id="machine-grid"></div>
+    </div>
+
+    <div id="step-load" style="display:none">
+      <button class="btn-cancel" onclick="cancelAll()">✕ キャンセル</button>
+      <div class="breadcrumb">
+        <span class="bc-item" onclick="backTo('machine')">マシン</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-current" id="bc-m-load"></span>
+      </div>
+      <div class="step-box">
+        <div class="step-label">Step 1</div>
+        <div class="step-heading">重量を選ぶ (kg)</div>
+        <div class="num-grid" id="load-grid"></div>
+        <div class="custom-row">
+          <input type="number" id="load-custom" class="custom-input" placeholder="直接入力">
+          <span class="unit-label">kg</span>
+          <button class="btn-decide" onclick="confirmCustomLoad()">決定</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="step-level" style="display:none">
+      <button class="btn-cancel" onclick="cancelAll()">✕ キャンセル</button>
+      <div class="breadcrumb">
+        <span class="bc-item" onclick="backTo('machine')">マシン</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-current" id="bc-m-level"></span>
+      </div>
+      <div class="step-box">
+        <div class="step-label">Step 1</div>
+        <div class="step-heading">負荷を選ぶ</div>
+        <div class="lev-grid">
+          <button class="lev-btn" onclick="pickLevel('低',this)">
+            <span class="lev-icon">🟢</span>
+            <span class="lev-name">低</span>
+            <span class="lev-sub" id="lev-sub-low"></span>
+          </button>
+          <button class="lev-btn" onclick="pickLevel('中',this)">
+            <span class="lev-icon">🟡</span>
+            <span class="lev-name">中</span>
+            <span class="lev-sub" id="lev-sub-mid"></span>
+          </button>
+          <button class="lev-btn" onclick="pickLevel('高',this)">
+            <span class="lev-icon">🔴</span>
+            <span class="lev-name">高</span>
+            <span class="lev-sub" id="lev-sub-high"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="step-duration" style="display:none">
+      <button class="btn-cancel" onclick="cancelAll()">✕ キャンセル</button>
+      <div class="breadcrumb">
+        <span class="bc-item" onclick="backTo('machine')">マシン</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-item" onclick="backTo('level')" id="bc-l-dur"></span>
+        <span class="bc-sep">›</span>
+        <span class="bc-current">時間</span>
+      </div>
+      <div class="step-box">
+        <div class="step-label">Step 2</div>
+        <div class="step-heading">時間を選ぶ (分)</div>
+        <div class="num-grid" id="duration-grid"></div>
+        <div class="custom-row">
+          <input type="number" id="duration-custom" class="custom-input" placeholder="直接入力">
+          <span class="unit-label">分</span>
+          <button class="btn-decide" onclick="confirmCustomDuration()">決定</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="step-reps" style="display:none">
+      <button class="btn-cancel" onclick="cancelAll()">✕ キャンセル</button>
+      <div class="breadcrumb" id="bc-reps-bar"></div>
+      <div class="step-box">
+        <div class="step-label" id="reps-step-label">Step 2</div>
+        <div class="step-heading">回数を選ぶ (回)</div>
+        <div class="num-grid" id="reps-grid"></div>
+        <div class="custom-row">
+          <input type="number" id="reps-custom" class="custom-input" placeholder="直接入力">
+          <span class="unit-label">回</span>
+          <button class="btn-decide" onclick="confirmCustomReps()">決定</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="step-sets" style="display:none">
+      <button class="btn-cancel" onclick="cancelAll()">✕ キャンセル</button>
+      <div class="breadcrumb" id="bc-sets-bar"></div>
+      <div class="step-box">
+        <div class="step-label" id="sets-step-label">Step 3</div>
+        <div class="step-heading">セット数を選ぶ</div>
+        <div class="num-grid" id="sets-grid"></div>
+        <div class="custom-row">
+          <input type="number" id="sets-custom" class="custom-input" placeholder="直接入力">
+          <span class="unit-label">セット</span>
+          <button class="btn-decide" onclick="confirmCustomSets()">決定</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="step-confirm" style="display:none">
+      <button class="btn-cancel" onclick="cancelAll()">✕ キャンセル</button>
+      <div class="step-box">
+        <div class="step-label">確認</div>
+        <div class="step-heading">内容を確認</div>
+        <div class="confirm-summary" id="confirm-card"></div>
+        <div class="action-row">
+          <button class="btn-secondary" onclick="cancelAll()">やり直す</button>
+          <button class="btn-primary" onclick="saveLog()">記録する ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-list" id="today-log-section"></div>
+  </div>
+
+  <!-- 履歴ビュー -->
+  <div id="view-history" class="view">
+    <div class="section-title">履歴</div>
+    <div id="history-content"></div>
+  </div>
+
+  <!-- カレンダービュー -->
+  <div id="view-calendar" class="view">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-legend"><span class="cal-legend-dot"></span>記録あり</div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div id="cal-popup-area"></div>
+  </div>
+
+  <!-- CSV出力ビュー -->
+  <div id="view-export" class="view">
+    <div class="section-title">CSV出力</div>
+    <div class="export-card">
+      <div class="export-label">出力期間</div>
+      <div class="date-row">
+        <div class="date-field">
+          <label>開始日</label>
+          <input type="date" id="csv-from" class="date-input" oninput="updateCsvCount()">
+        </div>
+        <div class="date-field">
+          <label>終了日</label>
+          <input type="date" id="csv-to" class="date-input" oninput="updateCsvCount()">
+        </div>
+      </div>
+      <div class="shortcut-row">
+        <button class="shortcut-btn" onclick="setRange(7)">直近7日</button>
+        <button class="shortcut-btn" onclick="setRange(30)">直近30日</button>
+        <button class="shortcut-btn" onclick="setRange(90)">直近90日</button>
+        <button class="shortcut-btn" onclick="setRangeAll()">全期間</button>
+      </div>
+      <div class="csv-count" id="csv-count"></div>
+      <button class="btn-download" onclick="downloadCSV()">⬇ CSVをダウンロード</button>
+    </div>
+    <div class="export-note">出力項目：日付 / 時刻 / マシン名 / 負荷・重量 / 回数・時間 / セット数<br>文字コード：UTF-8 BOM付き（Excel対応）</div>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showView('record',this)" id="nav-record">
+    <span class="nav-icon">＋</span>記録
+  </button>
+  <button class="nav-item" onclick="showView('history',this)" id="nav-history">
+    <span class="nav-icon">📋</span>履歴
+  </button>
+  <button class="nav-item" onclick="showView('calendar',this)" id="nav-calendar">
+    <span class="nav-icon">📅</span>カレンダー
+  </button>
+  <button class="nav-item" onclick="showView('export',this)" id="nav-export">
+    <span class="nav-icon">📤</span>CSV
+  </button>
+</nav>
+
+<script>
+const MACHINES=[
+  {id:'run',     name:'ランニングマシン',  icon:'🏃', type:'cardio'},
+  {id:'bike',    name:'エクササイズバイク', icon:'🚴', type:'cardio'},
+  {id:'chest',   name:'チェストプレス',   icon:'🏋️', type:'weight', max:60},
+  {id:'lat',     name:'ラットプルダウン',  icon:'⬇️', type:'weight', max:60},
+  {id:'shoulder',name:'ショルダープレス',  icon:'🤸', type:'weight', max:50},
+  {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100},
+  {id:'adduct',  name:'アダクション',     icon:'🔀', type:'weight', max:50},
+  {id:'abduct',  name:'アブダクション',   icon:'↔️', type:'weight', max:50},
+  {id:'abs',     name:'アブベンチ',       icon:'🧘', type:'abslevel'},
+  {id:'bicep',   name:'バイセップスカール',icon:'💪', type:'weight', max:40},
+];
+const CARDIO_SUBS={低:'ウォームアップ',中:'有酸素',高:'インターバル'};
+const ABS_SUBS={低:'ゆっくり',中:'標準',高:'きつめ'};
+const DURATIONS=[5,10,15,20,25,30,40,50,60];
+const REPS_NORMAL=[5,8,10,12,15,20,25,30];
+const REPS_ABS=[10,15,20,25,30,35,40,50];
+const SETS=[1,2,3,4,5];
+
+function makeWeights(max){const a=[];for(let v=5;v<=max;v+=5)a.push(v);return a;}
+function mObj(id){return MACHINES.find(x=>x.id===id)||{icon:'',name:id,type:'weight'};}
+
+let logs=JSON.parse(localStorage.getItem('czlogs5')||'[]');
+let cur={machine:null,load:null,reps:null,sets:null};
+let calYear,calMonth,calSelected;
+
+function saveLogs(){localStorage.setItem('czlogs5',JSON.stringify(logs));}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function nowTimeStr(){const n=new Date();return`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;}
+
+const STEPS=['machine','load','level','duration','reps','sets','confirm'];
+function initStep(s){STEPS.forEach(x=>{document.getElementById('step-'+x).style.display=x===s?'block':'none';});}
+
+function cancelAll(){
+  cur={machine:null,load:null,reps:null,sets:null};
+  document.querySelectorAll('.num-btn.selected,.machine-btn.selected,.lev-btn.selected').forEach(el=>el.classList.remove('selected'));
+  initStep('machine');
+}
+
+function backTo(step){
+  if(step==='machine'){cancelAll();return;}
+  if(step==='level'){
+    cur.load=null;cur.reps=null;cur.sets=null;
+    document.querySelectorAll('.lev-btn.selected,.num-btn.selected').forEach(el=>el.classList.remove('selected'));
+    initStep('level');
+  }
+  if(step==='load'){
+    cur.load=null;cur.reps=null;cur.sets=null;
+    document.querySelectorAll('#load-grid .num-btn.selected').forEach(el=>el.classList.remove('selected'));
+    initStep('load');
+  }
+  if(step==='reps'){
+    cur.reps=null;cur.sets=null;
+    document.querySelectorAll('#reps-grid .num-btn.selected').forEach(el=>el.classList.remove('selected'));
+    initStep('reps');
+  }
+}
+
+function showView(v,btn){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  btn.classList.add('active');
+  if(v==='record'){renderTodayLogs();initStep('machine');}
+  if(v==='history')renderHistory();
+  if(v==='calendar')renderCalendar();
+  if(v==='export')initExport();
+}
+
+function pickMachine(m,btn){
+  cur={machine:m.id,load:null,reps:null,sets:null};
+  document.querySelectorAll('.machine-btn').forEach(el=>el.classList.remove('selected'));
+  btn.classList.add('selected');
+  if(m.type==='cardio'){
+    document.getElementById('bc-m-level').textContent=m.name;
+    document.getElementById('lev-sub-low').textContent=CARDIO_SUBS['低'];
+    document.getElementById('lev-sub-mid').textContent=CARDIO_SUBS['中'];
+    document.getElementById('lev-sub-high').textContent=CARDIO_SUBS['高'];
+    setTimeout(()=>initStep('level'),100);
+  } else if(m.type==='abslevel'){
+    document.getElementById('bc-m-level').textContent=m.name;
+    document.getElementById('lev-sub-low').textContent=ABS_SUBS['低'];
+    document.getElementById('lev-sub-mid').textContent=ABS_SUBS['中'];
+    document.getElementById('lev-sub-high').textContent=ABS_SUBS['高'];
+    setTimeout(()=>initStep('level'),100);
+  } else {
+    document.getElementById('bc-m-load').textContent=m.name;
+    renderWeightGrid(m);
+    setTimeout(()=>initStep('load'),100);
+  }
+}
+
+function renderWeightGrid(m){
+  const g=document.getElementById('load-grid');g.innerHTML='';
+  makeWeights(m.max||60).forEach(v=>{
+    const b=document.createElement('button');b.className='num-btn';b.textContent=v+'kg';
+    b.onclick=()=>pickLoad(v,b);g.appendChild(b);
+  });
+  document.getElementById('load-custom').value='';
+}
+
+function pickLoad(v,btn){
+  cur.load=v;
+  document.querySelectorAll('#load-grid .num-btn').forEach(el=>el.classList.remove('selected'));
+  btn.classList.add('selected');
+  setBcReps();renderRepsGrid(mObj(cur.machine));
+  document.getElementById('reps-step-label').textContent='Step 2';
+  setTimeout(()=>initStep('reps'),100);
+}
+function confirmCustomLoad(){
+  const v=parseFloat(document.getElementById('load-custom').value);
+  if(!v||v<=0){alert('値を入力してください');return;}
+  cur.load=v;setBcReps();renderRepsGrid(mObj(cur.machine));
+  document.getElementById('reps-step-label').textContent='Step 2';
+  setTimeout(()=>initStep('reps'),100);
+}
+
+function pickLevel(level,btn){
+  cur.load=level;
+  document.querySelectorAll('.lev-btn').forEach(el=>el.classList.remove('selected'));
+  btn.classList.add('selected');
+  const m=mObj(cur.machine);
+  document.getElementById('bc-l-dur').textContent='負荷：'+level;
+  if(m.type==='cardio'){
+    renderDurationGrid();
+    setTimeout(()=>initStep('duration'),100);
+  } else {
+    setBcReps();renderRepsGrid(m);
+    document.getElementById('reps-step-label').textContent='Step 2';
+    setTimeout(()=>initStep('reps'),100);
+  }
+}
+
+function renderDurationGrid(){
+  const g=document.getElementById('duration-grid');g.innerHTML='';
+  DURATIONS.forEach(v=>{
+    const b=document.createElement('button');b.className='num-btn';b.textContent=v+'分';
+    b.onclick=()=>pickDuration(v,b);g.appendChild(b);
+  });
+  document.getElementById('duration-custom').value='';
+}
+function pickDuration(v,btn){
+  cur.reps=v;
+  document.querySelectorAll('#duration-grid .num-btn').forEach(el=>el.classList.remove('selected'));
+  btn.classList.add('selected');
+  setBcSets();renderSetsGrid();
+  document.getElementById('sets-step-label').textContent='Step 3';
+  setTimeout(()=>initStep('sets'),100);
+}
+function confirmCustomDuration(){
+  const v=parseInt(document.getElementById('duration-custom').value);
+  if(!v||v<=0){alert('値を入力してください');return;}
+  cur.reps=v;setBcSets();renderSetsGrid();
+  setTimeout(()=>initStep('sets'),100);
+}
+
+function setBcReps(){
+  const m=mObj(cur.machine);
+  let html=`<span class="bc-item" onclick="backTo('machine')">マシン</span><span class="bc-sep">›</span>`;
+  if(cur.load!=null){
+    const lbl=m.type==='abslevel'?'負荷：'+cur.load:cur.load+'kg';
+    const step=m.type==='abslevel'?'level':'load';
+    html+=`<span class="bc-item" onclick="backTo('${step}')">${lbl}</span><span class="bc-sep">›</span>`;
+  }
+  html+=`<span class="bc-current">回数</span>`;
+  document.getElementById('bc-reps-bar').innerHTML=html;
+}
+
+function renderRepsGrid(m){
+  const isAbs=m.type==='abslevel';
+  const reps=isAbs?REPS_ABS:REPS_NORMAL;
+  const g=document.getElementById('reps-grid');g.innerHTML='';
+  reps.forEach(r=>{
+    const b=document.createElement('button');b.className='num-btn';b.textContent=r+'回';
+    b.onclick=()=>pickReps(r,b);g.appendChild(b);
+  });
+  document.getElementById('reps-custom').value='';
+}
+function pickReps(r,btn){
+  cur.reps=r;
+  document.querySelectorAll('#reps-grid .num-btn').forEach(el=>el.classList.remove('selected'));
+  btn.classList.add('selected');
+  setBcSets();renderSetsGrid();
+  setTimeout(()=>initStep('sets'),100);
+}
+function confirmCustomReps(){
+  const v=parseInt(document.getElementById('reps-custom').value);
+  if(!v||v<=0){alert('値を入力してください');return;}
+  cur.reps=v;setBcSets();renderSetsGrid();
+  setTimeout(()=>initStep('sets'),100);
+}
+
+function setBcSets(){
+  const m=mObj(cur.machine);const isCardio=m.type==='cardio';const isAbs=m.type==='abslevel';
+  let html=`<span class="bc-item" onclick="backTo('machine')">マシン</span><span class="bc-sep">›</span>`;
+  if(cur.load!=null){
+    const lbl=(isCardio||isAbs)?'負荷：'+cur.load:cur.load+'kg';
+    const step=(isCardio||isAbs)?'level':'load';
+    html+=`<span class="bc-item" onclick="backTo('${step}')">${lbl}</span><span class="bc-sep">›</span>`;
+  }
+  if(cur.reps!=null){
+    const rLbl=isCardio?cur.reps+'分':cur.reps+'回';
+    html+=`<span class="bc-item" onclick="backTo('reps')">${rLbl}</span><span class="bc-sep">›</span>`;
+  }
+  html+=`<span class="bc-current">セット数</span>`;
+  document.getElementById('bc-sets-bar').innerHTML=html;
+}
+function renderSetsGrid(){
+  const g=document.getElementById('sets-grid');g.innerHTML='';
+  SETS.forEach(s=>{
+    const b=document.createElement('button');b.className='num-btn';b.textContent=s+'セット';
+    b.onclick=()=>pickSets(s,b);g.appendChild(b);
+  });
+  document.getElementById('sets-custom').value='';
+}
+function pickSets(s,btn){
+  cur.sets=s;
+  document.querySelectorAll('#sets-grid .num-btn').forEach(el=>el.classList.remove('selected'));
+  btn.classList.add('selected');
+  setTimeout(()=>showConfirm(),100);
+}
+function confirmCustomSets(){
+  const v=parseInt(document.getElementById('sets-custom').value);
+  if(!v||v<=0){alert('値を入力してください');return;}
+  cur.sets=v;showConfirm();
+}
+
+function showConfirm(){
+  const m=mObj(cur.machine);const isCardio=m.type==='cardio';const isAbs=m.type==='abslevel';
+  let rows=[];
+  rows.push(`<div class="confirm-row"><span class="confirm-label">マシン</span><span class="confirm-val">${m.icon} ${m.name}</span></div>`);
+  if(isCardio||isAbs){
+    rows.push(`<div class="confirm-row"><span class="confirm-label">負荷</span><span class="confirm-val">${cur.load}</span></div>`);
+  } else {
+    rows.push(`<div class="confirm-row"><span class="confirm-label">重量</span><span class="confirm-val">${cur.load} kg</span></div>`);
+  }
+  const trLabel=isCardio?'時間':'回数';
+  const trVal=isCardio?cur.reps+'分':cur.reps+'回';
+  rows.push(`<div class="confirm-row"><span class="confirm-label">${trLabel}</span><span class="confirm-val">${trVal}</span></div>`);
+  rows.push(`<div class="confirm-row"><span class="confirm-label">セット数</span><span class="confirm-val">${cur.sets} セット</span></div>`);
+  document.getElementById('confirm-card').innerHTML=rows.join('');
+  initStep('confirm');
+}
+
+function saveLog(){
+  const m=mObj(cur.machine);
+  logs.push({date:todayStr(),time:nowTimeStr(),machine:cur.machine,machineName:m.name,machineIcon:m.icon,load:cur.load,type:m.type,reps:cur.reps,sets:cur.sets,id:Date.now()});
+  saveLogs();cur={machine:null,load:null,reps:null,sets:null};
+  initStep('machine');renderTodayLogs();
+}
+function deleteLog(id){logs=logs.filter(l=>l.id!==id);saveLogs();renderTodayLogs();}
+
+function logDetailStr(l){
+  const isCardio=l.type==='cardio';const isAbs=l.type==='abslevel';
+  if(isCardio) return`負荷：${l.load} ／ ${l.reps}分 × ${l.sets}セット`;
+  if(isAbs)    return`負荷：${l.load} ／ ${l.reps}回 × ${l.sets}セット`;
+  return`${l.load}kg × ${l.reps}回 × ${l.sets}セット`;
+}
+
+function renderTodayLogs(){
+  const today=todayStr();const tl=logs.filter(l=>l.date===today);
+  const sec=document.getElementById('today-log-section');
+  if(!tl.length){sec.innerHTML='';return;}
+  sec.innerHTML=`<div class="log-list-title">今日の記録（${tl.length}件）</div>`+
+    tl.map(l=>`<div class="log-card">
+      <div style="flex:1">
+        <div class="log-machine-name">${l.machineIcon||''} ${l.machineName}</div>
+        <div class="log-detail">${logDetailStr(l)}</div>
+        <div class="log-time-badge">${l.time||''}</div>
+      </div>
+      <button class="log-delete" onclick="deleteLog(${l.id})">削除</button>
+    </div>`).join('');
+}
+
+function renderHistory(){
+  const grouped={};logs.forEach(l=>{if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l);});
+  const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+  const c=document.getElementById('history-content');
+  if(!dates.length){c.innerHTML='<div class="empty-msg">記録がまだありません</div>';return;}
+  c.innerHTML=dates.map(d=>{
+    const [y,mo,day]=d.split('-');
+    const dow=['日','月','火','水','木','金','土'][new Date(d).getDay()];
+    return`<div style="margin-bottom:20px">
+      <div class="history-date-header">${y}/${mo}/${day}（${dow}）</div>
+      ${grouped[d].map(l=>`<div class="log-card">
+        <div style="flex:1">
+          <div class="log-machine-name">${l.machineIcon||''} ${l.machineName}</div>
+          <div class="log-detail">${logDetailStr(l)}</div>
+        </div>
+        <span class="log-time-badge">${l.time||''}</span>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderCalendar(){
+  const now=new Date();
+  if(!calYear){calYear=now.getFullYear();calMonth=now.getMonth();}
+  document.getElementById('cal-month-label').textContent=`${calYear}年${calMonth+1}月`;
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  ['日','月','火','水','木','金','土'].forEach(d=>{const h=document.createElement('div');h.className='cal-head';h.textContent=d;grid.appendChild(h);});
+  const first=new Date(calYear,calMonth,1).getDay();
+  const days=new Date(calYear,calMonth+1,0).getDate();
+  const todayFull=todayStr();
+  const logDates=new Set(logs.map(l=>l.date));
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+  for(let d=1;d<=days;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const btn=document.createElement('button');btn.className='cal-day';btn.textContent=d;
+    if(logDates.has(ds))btn.classList.add('has-log');
+    if(ds===todayFull)btn.classList.add('today');
+    if(ds===calSelected)btn.classList.add('selected');
+    btn.onclick=()=>{calSelected=ds;renderCalendar();showCalPopup(ds);};
+    grid.appendChild(btn);
+  }
+  if(calSelected)showCalPopup(calSelected);
+  else document.getElementById('cal-popup-area').innerHTML='';
+}
+
+function showCalPopup(ds){
+  const dl=logs.filter(l=>l.date===ds);
+  const area=document.getElementById('cal-popup-area');
+  if(!dl.length){area.innerHTML=`<div class="empty-msg">${ds.replace(/-/g,'/')} の記録はありません</div>`;return;}
+  const firstTime=dl[0].time||'';
+  const lastTime=dl[dl.length-1].time||'';
+  const timeRange=firstTime&&lastTime&&firstTime!==lastTime?`${firstTime} 〜 ${lastTime}`:firstTime;
+  area.innerHTML=`<div class="popup-backdrop"><div class="popup-box">
+    <div class="popup-header">
+      <div class="popup-date">${ds.replace(/-/g,'/')}</div>
+      <button class="popup-close" onclick="document.getElementById('cal-popup-area').innerHTML='';calSelected=null;renderCalendar()">閉じる</button>
+    </div>
+    ${timeRange?`<div class="popup-time-range">トレーニング時間：${timeRange}</div>`:''}
+    ${dl.map(l=>`<div class="log-card" style="margin-bottom:6px">
+      <div style="flex:1">
+        <div class="log-machine-name">${l.machineIcon||''} ${l.machineName}</div>
+        <div class="log-detail">${logDetailStr(l)}</div>
+      </div>
+      <span class="log-time-badge">${l.time||''}</span>
+    </div>`).join('')}
+  </div></div>`;
+}
+
+function changeMonth(d){
+  calMonth+=d;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}
+  calSelected=null;renderCalendar();document.getElementById('cal-popup-area').innerHTML='';
+}
+
+function initExport(){
+  const today=todayStr();
+  const fromDef=logs.length?logs.reduce((a,b)=>a.date<b.date?a:b).date:today;
+  document.getElementById('csv-from').value=fromDef;
+  document.getElementById('csv-to').value=today;
+  updateCsvCount();
+}
+function setRange(days){
+  const to=new Date();const from=new Date();from.setDate(from.getDate()-days+1);
+  document.getElementById('csv-from').value=from.toISOString().slice(0,10);
+  document.getElementById('csv-to').value=to.toISOString().slice(0,10);
+  updateCsvCount();
+}
+function setRangeAll(){
+  if(!logs.length)return;
+  const sorted=logs.map(l=>l.date).sort();
+  document.getElementById('csv-from').value=sorted[0];
+  document.getElementById('csv-to').value=sorted[sorted.length-1];
+  updateCsvCount();
+}
+function updateCsvCount(){
+  const from=document.getElementById('csv-from').value;
+  const to=document.getElementById('csv-to').value;
+  const n=logs.filter(l=>l.date>=from&&l.date<=to).length;
+  document.getElementById('csv-count').textContent=`対象：${n}件`;
+}
+function downloadCSV(){
+  const from=document.getElementById('csv-from').value;
+  const to=document.getElementById('csv-to').value;
+  if(!from||!to){alert('期間を設定してください');return;}
+  const filtered=logs.filter(l=>l.date>=from&&l.date<=to).sort((a,b)=>a.date===b.date?a.time.localeCompare(b.time):a.date.localeCompare(b.date));
+  if(!filtered.length){alert('該当する記録がありません');return;}
+  const header='日付,時刻,マシン名,負荷/重量,回数/時間,セット数';
+  const rows=filtered.map(l=>{
+    const isCardio=l.type==='cardio';const isAbs=l.type==='abslevel';
+    const loadVal=(isCardio||isAbs)?'負荷：'+l.load:l.load+'kg';
+    const repsVal=isCardio?l.reps+'分':l.reps+'回';
+    return[l.date,l.time||'',l.machineName,loadVal,repsVal,l.sets+'セット'].join(',');
+  });
+  const csv='\uFEFF'+[header,...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download=`chocozap_${from}_${to}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Init
+const mg=document.getElementById('machine-grid');
+MACHINES.forEach(m=>{
+  const b=document.createElement('button');b.className='machine-btn';
+  b.innerHTML=`<span class="machine-icon">${m.icon}</span><span>${m.name}</span>`;
+  b.onclick=()=>pickMachine(m,b);mg.appendChild(b);
+});
+const now=new Date();
+const DOW=['日','月','火','水','木','金','土'];
+document.getElementById('header-date').textContent=`${now.getMonth()+1}/${now.getDate()}（${DOW[now.getDay()]}）`;
+renderTodayLogs();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
