@@ -427,6 +427,20 @@ body {
   color: var(--text3);
   margin-top: 4px;
 }
+.log-actions { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+.log-edit {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: var(--accent);
+  font-size: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.log-edit:active { background: var(--accent-bg); border-color: var(--accent-border); }
 .log-delete {
   background: transparent;
   border: 1px solid var(--border2);
@@ -434,11 +448,105 @@ body {
   padding: 4px 8px;
   color: var(--text3);
   font-size: 12px;
+  font-family: 'Nunito', sans-serif;
   cursor: pointer;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 .log-delete:active { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+
+/* Edit modal */
+.edit-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+.edit-overlay.open { display: flex; }
+.edit-sheet {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+.edit-handle {
+  width: 36px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.edit-title { font-size: 15px; font-weight: 800; text-align: center; margin-bottom: 16px; }
+.edit-label {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  letter-spacing: 0.5px; text-transform: uppercase;
+  margin-top: 14px; margin-bottom: 8px;
+}
+.edit-label:first-of-type { margin-top: 0; }
+.edit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.edit-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 4px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+}
+.edit-btn:active { transform: scale(0.94); }
+.edit-btn.sel { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+.edit-lev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.edit-lev-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 8px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+}
+.edit-lev-btn:active { transform: scale(0.96); }
+.edit-lev-btn.sel { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+.edit-actions { display: flex; gap: 10px; margin-top: 20px; }
+.edit-cancel {
+  flex: 1; padding: 13px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text2);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+}
+.edit-save {
+  flex: 2; padding: 13px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px; font-weight: 800;
+  cursor: pointer;
+}
+.edit-save:disabled { opacity: 0.4; cursor: not-allowed; }
+.edit-save:not(:disabled):active { opacity: 0.75; }
 
 /* History */
 .history-date-header {
@@ -835,6 +943,19 @@ body {
 
 </main>
 
+<!-- ── 修正モーダル ── -->
+<div class="edit-overlay" id="edit-overlay" onclick="handleOverlayClick(event)">
+  <div class="edit-sheet" id="edit-sheet">
+    <div class="edit-handle"></div>
+    <div class="edit-title" id="edit-title"></div>
+    <div id="edit-body"></div>
+    <div class="edit-actions">
+      <button class="edit-cancel" onclick="closeEditModal()">キャンセル</button>
+      <button class="edit-save" id="edit-save-btn" onclick="saveEditLog()">保存</button>
+    </div>
+  </div>
+</div>
+
 <nav class="bottom-nav">
   <button class="nav-item active" onclick="showView('record',this)" id="nav-record">
     <span class="nav-icon">＋</span>記録
@@ -851,7 +972,7 @@ body {
 </nav>
 
 <script>
-const APP_VER = '1.1.7';
+const APP_VER = '1.1.8';
 
 const MACHINES=[
   {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100, color:'purple'},
@@ -1320,7 +1441,10 @@ function renderTodayLogs(){
         <div class="log-detail">${logDetailStr(l)}</div>
         <div class="log-time-badge">${l.time||''}</div>
       </div>
-      <button class="log-delete" onclick="deleteLog(${l.id})">削除</button>
+      <div class="log-actions">
+        <button class="log-edit" onclick="openEditModal(${l.id},'today')">修正</button>
+        <button class="log-delete" onclick="deleteLog(${l.id})">削除</button>
+      </div>
     </div>`).join('');
 }
 
@@ -1341,7 +1465,10 @@ function renderHistory(){
           <div class="log-detail">${logDetailStr(l)}</div>
           <div class="log-time-badge">${l.time||''}</div>
         </div>
-        <button class="log-delete" onclick="deleteLogFromHistory(${l.id})">削除</button>
+        <div class="log-actions">
+          <button class="log-edit" onclick="openEditModal(${l.id},'history')">修正</button>
+          <button class="log-delete" onclick="deleteLogFromHistory(${l.id})">削除</button>
+        </div>
       </div>`).join('')}
     </div>`;
   }).join('');
@@ -1349,6 +1476,104 @@ function renderHistory(){
 
 function deleteLogFromHistory(id){
   logs=logs.filter(l=>l.id!==id);saveLogs();renderHistory();
+}
+
+// ── 修正モーダル ──
+let _editId=null, _editCtx=null, _editDs=null, _ev={};
+
+function openEditModal(id, ctx, ds){
+  const l=logs.find(x=>x.id===id);
+  if(!l)return;
+  _editId=id; _editCtx=ctx||'history'; _editDs=ds||null;
+  _ev={load:l.load, reps:l.reps, sets:l.sets};
+  const m=mObj(l.machine);
+  document.getElementById('edit-title').textContent=`${l.machineIcon||''} ${l.machineName} を修正`;
+  renderEditBody(l,m);
+  document.getElementById('edit-overlay').classList.add('open');
+}
+
+function renderEditBody(l,m){
+  const isCardio=m.type==='cardio', isAbs=m.type==='abslevel';
+  let html='';
+
+  // 負荷
+  html+=`<div class="edit-label">${isCardio?'負荷':isAbs?'負荷（レベル）':'重量'}</div>`;
+  if(isAbs){
+    html+=`<div class="edit-lev-grid">`;
+    ['低','中','高'].forEach(lv=>{
+      const sel=_ev.load===lv?'sel':'';
+      html+=`<button class="edit-lev-btn ${sel}" onclick="editPick('load','${lv}',this,'edit-lev-btn')">${lv}<br><span style="font-size:10px;color:var(--text3)">${ABS_SUBS[lv]}</span></button>`;
+    });
+    html+=`</div>`;
+  } else {
+    const vals=isCardio?CARDIO_LOADS:makeWeights(m.max||60);
+    const cols=isCardio?3:4;
+    html+=`<div class="edit-grid" style="grid-template-columns:repeat(${cols},1fr)">`;
+    vals.forEach(v=>{
+      const label=isCardio?String(v):`${v}kg`;
+      const sel=_ev.load===v?'sel':'';
+      html+=`<button class="edit-btn ${sel}" onclick="editPick('load',${v},this,'edit-btn')">${label}</button>`;
+    });
+    html+=`</div>`;
+  }
+
+  // 回数 or 時間
+  const repVals=isCardio?DURATIONS:isAbs?REPS_ABS:REPS_NORMAL;
+  const repCols=isCardio?3:4;
+  html+=`<div class="edit-label">${isCardio?'時間（分）':'回数'}</div>`;
+  html+=`<div class="edit-grid" style="grid-template-columns:repeat(${repCols},1fr)">`;
+  repVals.forEach(v=>{
+    const label=isCardio?`${v}分`:`${v}回`;
+    const sel=_ev.reps===v?'sel':'';
+    html+=`<button class="edit-btn ${sel}" onclick="editPick('reps',${v},this,'edit-btn')">${label}</button>`;
+  });
+  html+=`</div>`;
+
+  // セット
+  html+=`<div class="edit-label">セット数</div>`;
+  html+=`<div class="edit-grid" style="grid-template-columns:repeat(5,1fr)">`;
+  SETS.forEach(v=>{
+    const sel=_ev.sets===v?'sel':'';
+    html+=`<button class="edit-btn ${sel}" onclick="editPick('sets',${v},this,'edit-btn')">${v}セット</button>`;
+  });
+  html+=`</div>`;
+
+  document.getElementById('edit-body').innerHTML=html;
+  updateEditSaveBtn();
+}
+
+function editPick(field,val,btn,cls){
+  _ev[field]=val;
+  btn.closest('.edit-lev-grid,.edit-grid').querySelectorAll('.'+cls).forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  updateEditSaveBtn();
+}
+
+function updateEditSaveBtn(){
+  const ok=_ev.load!==null&&_ev.load!==undefined && _ev.reps!==null&&_ev.reps!==undefined && _ev.sets!==null&&_ev.sets!==undefined;
+  document.getElementById('edit-save-btn').disabled=!ok;
+}
+
+function saveEditLog(){
+  const idx=logs.findIndex(x=>x.id===_editId);
+  if(idx===-1){closeEditModal();return;}
+  logs[idx].load=_ev.load;
+  logs[idx].reps=_ev.reps;
+  logs[idx].sets=_ev.sets;
+  saveLogs();
+  closeEditModal();
+  if(_editCtx==='today'){renderTodayLogs();}
+  else if(_editCtx==='history'){renderHistory();}
+  else if(_editCtx==='calendar'&&_editDs){showCalPopup(_editDs);}
+}
+
+function closeEditModal(){
+  document.getElementById('edit-overlay').classList.remove('open');
+  _editId=null; _editCtx=null; _editDs=null; _ev={};
+}
+
+function handleOverlayClick(e){
+  if(e.target===document.getElementById('edit-overlay'))closeEditModal();
 }
 
 function renderCalendar(){
@@ -1398,7 +1623,10 @@ function showCalPopup(ds){
         <div class="log-detail">${logDetailStr(l)}</div>
         <div class="log-time-badge">${l.time||''}</div>
       </div>
-      <button class="log-delete" onclick="deleteLogFromCalendar(${l.id},'${ds}')">削除</button>
+      <div class="log-actions">
+        <button class="log-edit" onclick="openEditModal(${l.id},'calendar','${ds}')">修正</button>
+        <button class="log-delete" onclick="deleteLogFromCalendar(${l.id},'${ds}')">削除</button>
+      </div>
     </div>`).join('')}
   </div></div>`;
 }
