@@ -180,7 +180,8 @@ body {
   background: var(--accent-bg);
   color: var(--accent);
 }
-.machine-icon { font-size: 28px; line-height: 1; }
+.machine-icon { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; }
+.machine-icon svg { width: 100%; height: 100%; }
 
 /* Step container */
 .step-box {
@@ -972,7 +973,7 @@ body {
 </nav>
 
 <script>
-const APP_VER = '1.1.9';
+const APP_VER = '1.2.0';
 
 const MACHINES=[
   {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100, color:'purple'},
@@ -986,6 +987,148 @@ const MACHINES=[
   {id:'run',     name:'ランニングマシン',  icon:'🏃', type:'cardio',           color:'green'},
   {id:'bike',    name:'エクササイズバイク',icon:'🚴', type:'cardio',           color:'lime'},
 ];
+const MACHINE_SVGS={
+  leg:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="66" y1="16" x2="66" y2="60" stroke="white" stroke-width="3.5"/>
+    <line x1="58" y1="60" x2="74" y2="60" stroke="white" stroke-width="3.5"/>
+    <rect x="60" y="16" width="12" height="7" rx="2" fill="white"/>
+    <rect x="18" y="44" width="22" height="5" rx="2.5" fill="white"/>
+    <rect x="16" y="32" width="5" height="18" rx="2.5" fill="white"/>
+    <circle cx="24" cy="26" r="7" fill="white"/>
+    <line x1="28" y1="29" x2="44" y2="38" stroke="white" stroke-width="5"/>
+    <line x1="40" y1="38" x2="58" y2="26" stroke="white" stroke-width="5"/>
+    <line x1="58" y1="26" x2="62" y2="22" stroke="white" stroke-width="4"/>
+  </svg>`,
+  adduct:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="40" y1="8" x2="40" y2="72" stroke="white" stroke-width="3"/>
+    <rect x="28" y="46" width="24" height="5" rx="2.5" fill="white"/>
+    <circle cx="40" cy="22" r="7" fill="white"/>
+    <line x1="40" y1="30" x2="40" y2="46" stroke="white" stroke-width="5"/>
+    <line x1="40" y1="46" x2="24" y2="62" stroke="white" stroke-width="5"/>
+    <line x1="40" y1="46" x2="56" y2="62" stroke="white" stroke-width="5"/>
+    <line x1="24" y1="62" x2="24" y2="72" stroke="white" stroke-width="4"/>
+    <line x1="56" y1="62" x2="56" y2="72" stroke="white" stroke-width="4"/>
+    <polyline points="30,54 26,58 30,62" stroke="rgba(255,255,255,.6)" stroke-width="2.5" fill="none"/>
+    <polyline points="50,54 54,58 50,62" stroke="rgba(255,255,255,.6)" stroke-width="2.5" fill="none"/>
+  </svg>`,
+  abduct:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="40" y1="8" x2="40" y2="72" stroke="white" stroke-width="3"/>
+    <rect x="28" y="46" width="24" height="5" rx="2.5" fill="white"/>
+    <circle cx="40" cy="22" r="7" fill="white"/>
+    <line x1="40" y1="30" x2="40" y2="46" stroke="white" stroke-width="5"/>
+    <line x1="40" y1="46" x2="20" y2="65" stroke="white" stroke-width="5"/>
+    <line x1="40" y1="46" x2="60" y2="65" stroke="white" stroke-width="5"/>
+    <line x1="20" y1="65" x2="20" y2="74" stroke="white" stroke-width="4"/>
+    <line x1="60" y1="65" x2="60" y2="74" stroke="white" stroke-width="4"/>
+    <polyline points="28,52 22,56 28,60" stroke="rgba(255,255,255,.6)" stroke-width="2.5" fill="none"/>
+    <polyline points="52,52 58,56 52,60" stroke="rgba(255,255,255,.6)" stroke-width="2.5" fill="none"/>
+  </svg>`,
+  abs:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="10" y="52" width="60" height="6" rx="3" fill="white"/>
+    <line x1="18" y1="58" x2="18" y2="68" stroke="white" stroke-width="3"/>
+    <line x1="62" y1="58" x2="62" y2="68" stroke="white" stroke-width="3"/>
+    <line x1="42" y1="52" x2="65" y2="52" stroke="white" stroke-width="5"/>
+    <line x1="42" y1="52" x2="28" y2="34" stroke="white" stroke-width="5"/>
+    <circle cx="23" cy="28" r="7" fill="white"/>
+    <line x1="28" y1="34" x2="22" y2="40" stroke="white" stroke-width="3.5"/>
+    <line x1="28" y1="34" x2="34" y2="40" stroke="white" stroke-width="3.5"/>
+  </svg>`,
+  chest:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="8" y="28" width="6" height="32" rx="3" fill="white"/>
+    <rect x="10" y="44" width="22" height="6" rx="3" fill="white"/>
+    <circle cx="38" cy="22" r="7" fill="white"/>
+    <line x1="38" y1="30" x2="36" y2="50" stroke="white" stroke-width="5"/>
+    <line x1="36" y1="36" x2="20" y2="36" stroke="white" stroke-width="4.5"/>
+    <line x1="20" y1="36" x2="58" y2="34" stroke="white" stroke-width="4.5"/>
+    <circle cx="60" cy="34" r="4" fill="white"/>
+    <line x1="36" y1="50" x2="28" y2="65" stroke="white" stroke-width="4.5"/>
+    <line x1="36" y1="50" x2="46" y2="65" stroke="white" stroke-width="4.5"/>
+    <line x1="28" y1="65" x2="28" y2="72" stroke="white" stroke-width="4"/>
+    <line x1="46" y1="65" x2="46" y2="72" stroke="white" stroke-width="4"/>
+  </svg>`,
+  lat:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="10" x2="68" y2="10" stroke="white" stroke-width="3.5"/>
+    <line x1="12" y1="10" x2="12" y2="70" stroke="white" stroke-width="3.5"/>
+    <line x1="68" y1="10" x2="68" y2="70" stroke="white" stroke-width="3.5"/>
+    <line x1="22" y1="14" x2="58" y2="14" stroke="white" stroke-width="4"/>
+    <line x1="40" y1="14" x2="40" y2="26" stroke="white" stroke-width="2.5" stroke-dasharray="3,2"/>
+    <rect x="26" y="58" width="28" height="5" rx="2.5" fill="white"/>
+    <circle cx="40" cy="30" r="7" fill="white"/>
+    <line x1="40" y1="38" x2="40" y2="58" stroke="white" stroke-width="5"/>
+    <line x1="40" y1="42" x2="24" y2="28" stroke="white" stroke-width="4.5"/>
+    <line x1="40" y1="42" x2="56" y2="28" stroke="white" stroke-width="4.5"/>
+    <circle cx="22" cy="26" r="3.5" fill="white"/>
+    <circle cx="58" cy="26" r="3.5" fill="white"/>
+  </svg>`,
+  shoulder:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="8" x2="12" y2="72" stroke="white" stroke-width="3.5"/>
+    <line x1="68" y1="8" x2="68" y2="72" stroke="white" stroke-width="3.5"/>
+    <line x1="12" y1="8" x2="68" y2="8" stroke="white" stroke-width="3.5"/>
+    <rect x="24" y="58" width="32" height="5" rx="2.5" fill="white"/>
+    <circle cx="40" cy="28" r="7" fill="white"/>
+    <line x1="40" y1="36" x2="40" y2="58" stroke="white" stroke-width="5"/>
+    <line x1="40" y1="40" x2="22" y2="30" stroke="white" stroke-width="4.5"/>
+    <line x1="22" y1="30" x2="22" y2="14" stroke="white" stroke-width="4.5"/>
+    <line x1="40" y1="40" x2="58" y2="30" stroke="white" stroke-width="4.5"/>
+    <line x1="58" y1="30" x2="58" y2="14" stroke="white" stroke-width="4.5"/>
+    <line x1="18" y1="14" x2="26" y2="14" stroke="white" stroke-width="4"/>
+    <line x1="54" y1="14" x2="62" y2="14" stroke="white" stroke-width="4"/>
+  </svg>`,
+  bicep:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="24" y="54" width="32" height="5" rx="2.5" fill="white"/>
+    <line x1="32" y1="59" x2="32" y2="70" stroke="white" stroke-width="3.5"/>
+    <line x1="48" y1="59" x2="48" y2="70" stroke="white" stroke-width="3.5"/>
+    <circle cx="38" cy="24" r="7" fill="white"/>
+    <line x1="38" y1="32" x2="38" y2="54" stroke="white" stroke-width="5"/>
+    <line x1="38" y1="38" x2="52" y2="44" stroke="white" stroke-width="4.5"/>
+    <line x1="52" y1="44" x2="52" y2="56" stroke="white" stroke-width="4.5"/>
+    <line x1="38" y1="38" x2="24" y2="40" stroke="white" stroke-width="4.5"/>
+    <line x1="24" y1="40" x2="20" y2="28" stroke="white" stroke-width="4.5"/>
+    <circle cx="14" cy="26" r="4" fill="white"/>
+    <circle cx="24" cy="26" r="4" fill="white"/>
+    <rect x="14" y="24" width="10" height="5" rx="2" fill="white"/>
+    <line x1="38" y1="54" x2="30" y2="66" stroke="white" stroke-width="4.5"/>
+    <line x1="38" y1="54" x2="46" y2="66" stroke="white" stroke-width="4.5"/>
+  </svg>`,
+  run:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="8" y="58" width="58" height="6" rx="3" fill="white"/>
+    <line x1="62" y1="58" x2="70" y2="42" stroke="white" stroke-width="3.5"/>
+    <line x1="70" y1="42" x2="70" y2="28" stroke="white" stroke-width="3.5"/>
+    <line x1="66" y1="28" x2="74" y2="28" stroke="white" stroke-width="3.5"/>
+    <circle cx="42" cy="18" r="7" fill="white"/>
+    <line x1="42" y1="26" x2="36" y2="46" stroke="white" stroke-width="5"/>
+    <line x1="38" y1="32" x2="52" y2="40" stroke="white" stroke-width="4"/>
+    <line x1="38" y1="32" x2="28" y2="26" stroke="white" stroke-width="4"/>
+    <line x1="36" y1="46" x2="44" y2="58" stroke="white" stroke-width="4.5"/>
+    <line x1="36" y1="46" x2="24" y2="52" stroke="white" stroke-width="4.5"/>
+    <line x1="24" y1="52" x2="20" y2="42" stroke="white" stroke-width="4.5"/>
+  </svg>`,
+  bike:`<svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="24" y1="60" x2="48" y2="44" stroke="white" stroke-width="3.5"/>
+    <line x1="48" y1="44" x2="58" y2="60" stroke="white" stroke-width="3.5"/>
+    <line x1="48" y1="44" x2="44" y2="32" stroke="white" stroke-width="3.5"/>
+    <circle cx="24" cy="62" r="10" stroke="white" stroke-width="3.5"/>
+    <circle cx="58" cy="62" r="10" stroke="white" stroke-width="3.5"/>
+    <line x1="58" y1="52" x2="60" y2="36" stroke="white" stroke-width="3.5"/>
+    <line x1="56" y1="36" x2="66" y2="36" stroke="white" stroke-width="3.5"/>
+    <rect x="38" y="30" width="14" height="4" rx="2" fill="white"/>
+    <line x1="37" y1="60" x2="43" y2="60" stroke="white" stroke-width="3.5"/>
+    <circle cx="37" cy="60" r="3" fill="white"/>
+    <circle cx="43" cy="60" r="3" fill="white"/>
+    <circle cx="54" cy="20" r="7" fill="white"/>
+    <line x1="52" y1="28" x2="44" y2="34" stroke="white" stroke-width="5"/>
+    <line x1="44" y1="34" x2="62" y2="34" stroke="white" stroke-width="4"/>
+    <line x1="44" y1="34" x2="38" y2="50" stroke="white" stroke-width="4.5"/>
+    <line x1="38" y1="50" x2="40" y2="60" stroke="white" stroke-width="4.5"/>
+  </svg>`,
+};
+
+function machineIconHtml(machineId,size){
+  const svg=MACHINE_SVGS[machineId];
+  if(!svg)return mObj(machineId).icon||'';
+  return`<span style="display:inline-flex;vertical-align:middle;width:${size}px;height:${size}px;margin-right:3px;flex-shrink:0">${svg}</span>`;
+}
+
 const CARDIO_LOADS=[5,10,15,20,25,30];
 const ABS_SUBS={低:'ゆっくり',中:'標準',高:'きつめ'};
 const DURATIONS=[5,10,15,20,25,30,40,50,60];
@@ -1437,7 +1580,7 @@ function renderTodayLogs(){
   sec.innerHTML=`<div class="log-list-title">今日の記録（${tl.length}件）</div>`+
     tl.map(l=>`<div class="log-card" style="${mColor(l.machine)}">
       <div style="flex:1">
-        <div class="log-machine-name" style="${mNameColor(l.machine)}">${l.machineIcon||''} ${l.machineName}</div>
+        <div class="log-machine-name" style="${mNameColor(l.machine)}">${machineIconHtml(l.machine,18)}${l.machineName}</div>
         <div class="log-detail">${logDetailStr(l)}</div>
         <div class="log-time-badge">${l.time||''}</div>
       </div>
@@ -1461,7 +1604,7 @@ function renderHistory(){
       <div class="history-date-header">${y}/${mo}/${day}（${dow}）</div>
       ${dayLogs.map(l=>`<div class="log-card" style="${mColor(l.machine)}">
         <div style="flex:1">
-          <div class="log-machine-name" style="${mNameColor(l.machine)}">${l.machineIcon||''} ${l.machineName}</div>
+          <div class="log-machine-name" style="${mNameColor(l.machine)}">${machineIconHtml(l.machine,18)}${l.machineName}</div>
           <div class="log-detail">${logDetailStr(l)}</div>
           <div class="log-time-badge">${l.time||''}</div>
         </div>
@@ -1488,7 +1631,7 @@ function openEditModal(id, ctx, ds){
   _editId=id; _editCtx=ctx||'history'; _editDs=ds||null;
   _ev={load:l.load, reps:l.reps, sets:l.sets};
   const m=mObj(l.machine);
-  document.getElementById('edit-title').textContent=`${l.machineIcon||''} ${l.machineName} を修正`;
+  document.getElementById('edit-title').innerHTML=`${machineIconHtml(l.machine,22)}${l.machineName} を修正`;
   renderEditBody(l,m);
   document.getElementById('edit-overlay').classList.add('open');
 }
@@ -1620,7 +1763,7 @@ function showCalPopup(ds){
     ${timeRange?`<div class="popup-time-range">トレーニング時間：${timeRange}</div>`:''}
     ${dl.map(l=>`<div class="log-card" style="margin-bottom:6px;${mColor(l.machine)}">
       <div style="flex:1">
-        <div class="log-machine-name" style="${mNameColor(l.machine)}">${l.machineIcon||''} ${l.machineName}</div>
+        <div class="log-machine-name" style="${mNameColor(l.machine)}">${machineIconHtml(l.machine,18)}${l.machineName}</div>
         <div class="log-detail">${logDetailStr(l)}</div>
         <div class="log-time-badge">${l.time||''}</div>
       </div>
@@ -1706,7 +1849,7 @@ MACHINES.forEach(m=>{
   const b=document.createElement('button');b.className='machine-btn';
   const c=m.color||'blue';
   b.style.cssText=`border-color:var(--mc-${c}-bd)`;
-  b.innerHTML=`<span class="machine-icon">${m.icon}</span><span style="color:var(--mc-${c}-tx)">${m.name}</span>`;
+  b.innerHTML=`<span class="machine-icon">${MACHINE_SVGS[m.id]||m.icon}</span><span style="color:var(--mc-${c}-tx)">${m.name}</span>`;
   b.onclick=()=>pickMachine(m,b);mg.appendChild(b);
 });
 const now=new Date();
