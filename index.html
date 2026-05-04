@@ -972,7 +972,7 @@ body {
 </nav>
 
 <script>
-const APP_VER = '1.1.8';
+const APP_VER = '1.1.9';
 
 const MACHINES=[
   {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100, color:'purple'},
@@ -1412,7 +1412,7 @@ function saveLog(){
   cur={machine:null,load:null,reps:null,sets:null};
   initStep('machine');renderTodayLogs();
 }
-function deleteLog(id){logs=logs.filter(l=>l.id!==id);saveLogs();renderTodayLogs();}
+function deleteLog(id){if(!confirm('この記録を削除しますか？'))return;logs=logs.filter(l=>l.id!==id);saveLogs();renderTodayLogs();}
 
 function logDetailStr(l){
   const isCardio=l.type==='cardio';const isAbs=l.type==='abslevel';
@@ -1475,6 +1475,7 @@ function renderHistory(){
 }
 
 function deleteLogFromHistory(id){
+  if(!confirm('この記録を削除しますか？'))return;
   logs=logs.filter(l=>l.id!==id);saveLogs();renderHistory();
 }
 
@@ -1632,6 +1633,7 @@ function showCalPopup(ds){
 }
 
 function deleteLogFromCalendar(id,ds){
+  if(!confirm('この記録を削除しますか？'))return;
   logs=logs.filter(l=>l.id!==id);saveLogs();
   const remaining=logs.filter(l=>l.date===ds);
   if(remaining.length===0){
