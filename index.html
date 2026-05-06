@@ -741,6 +741,75 @@ body {
 .btn-download:active { opacity: 0.85; }
 .export-note { font-size: 11px; color: var(--text3); line-height: 1.8; }
 
+/* Backup */
+.backup-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.backup-card-title {
+  font-size: 13px; font-weight: 800;
+  margin-bottom: 4px;
+}
+.backup-card-desc {
+  font-size: 11px; color: var(--text3);
+  line-height: 1.7; margin-bottom: 12px;
+}
+.btn-backup {
+  width: 100%;
+  background: var(--green-bg);
+  border: 1px solid rgba(74,222,128,.4);
+  border-radius: var(--radius);
+  padding: 14px;
+  color: var(--green);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px; font-weight: 800;
+  cursor: pointer; letter-spacing: 0.3px;
+}
+.btn-backup:active { opacity: 0.8; }
+.import-file-label {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--surface2);
+  border: 1px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 14px;
+  color: var(--text2);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; margin-bottom: 10px;
+  box-sizing: border-box;
+}
+.import-file-label:active { background: var(--accent-bg); }
+#import-file-input { display: none; }
+.import-status {
+  font-size: 12px; color: var(--text2);
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  display: none;
+  line-height: 1.6;
+}
+.import-status.ok  { color: var(--green); background: var(--green-bg); }
+.import-status.err { color: var(--red);   background: var(--red-bg); }
+.btn-import {
+  width: 100%;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+  padding: 14px;
+  color: var(--accent);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px; font-weight: 800;
+  cursor: pointer;
+  display: none;
+}
+.btn-import:active { opacity: 0.8; }
+
 .empty-msg { font-size: 14px; color: var(--text3); padding: 20px 0; text-align: center; }
 </style>
 </head>
@@ -940,6 +1009,34 @@ body {
       <button class="btn-download" onclick="downloadCSV()">⬇ CSVをダウンロード</button>
     </div>
     <div class="export-note">出力項目：日付 / 時刻 / マシン名 / 負荷・重量 / 回数・時間 / セット数<br>文字コード：UTF-8 BOM付き（Excel対応）<br>ファイル名：chocozap_v<span id="exp-ver"></span>_日時.csv（上書きなし）</div>
+
+    <div class="section-title" style="margin-top:24px">📱 機種変・バックアップ</div>
+
+    <!-- バックアップ保存 -->
+    <div class="backup-card">
+      <div class="backup-card-title">💾 バックアップを保存</div>
+      <div class="backup-card-desc">
+        全記録データをJSONファイルで保存します。<br>
+        新しいスマホに移すときは、このファイルを読み込めばデータが復元されます。<br>
+        （Googleドライブ・メール等で転送してください）
+      </div>
+      <button class="btn-backup" onclick="exportBackup()">⬇ バックアップを保存</button>
+    </div>
+
+    <!-- バックアップ読み込み -->
+    <div class="backup-card">
+      <div class="backup-card-title">📂 バックアップを読み込む</div>
+      <div class="backup-card-desc">
+        保存したJSONファイルを選択してください。<br>
+        既存データと自動マージします（重複はスキップ）。
+      </div>
+      <label class="import-file-label" for="import-file-input">
+        📁 ファイルを選択
+      </label>
+      <input type="file" id="import-file-input" accept=".json,application/json" onchange="onImportFileSelect(this)">
+      <div class="import-status" id="import-status"></div>
+      <button class="btn-import" id="btn-import" onclick="importBackup()">⬆ このデータを読み込む</button>
+    </div>
   </div>
 
 </main>
@@ -973,7 +1070,7 @@ body {
 </nav>
 
 <script>
-const APP_VER = '1.2.0';
+const APP_VER = '1.2.1';
 
 const MACHINES=[
   {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100, color:'purple'},
@@ -1841,6 +1938,73 @@ function downloadCSV(){
   const a=document.createElement('a');a.href=url;
   a.download=`chocozap_v${APP_VER}_${ts}.csv`;a.click();
   URL.revokeObjectURL(url);
+}
+
+// ── バックアップ出力 ──
+function exportBackup(){
+  const now=new Date();
+  const ts=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+  const data={version:APP_VER, exported:now.toISOString(), logs, lastSel};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download=`chocolog_backup_${ts}.json`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── バックアップ読み込み ──
+let _importData=null;
+
+function onImportFileSelect(input){
+  const status=document.getElementById('import-status');
+  const btn=document.getElementById('btn-import');
+  _importData=null; btn.style.display='none';
+  status.className='import-status'; status.style.display='none';
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const parsed=JSON.parse(e.target.result);
+      if(!parsed.logs||!Array.isArray(parsed.logs))throw new Error('形式エラー');
+      const newLogs=parsed.logs.filter(l=>l.id&&l.date&&l.machine);
+      const existIds=new Set(logs.map(l=>l.id));
+      const addCount=newLogs.filter(l=>!existIds.has(l.id)).length;
+      const skipCount=newLogs.length-addCount;
+      _importData=parsed;
+      status.className='import-status ok'; status.style.display='block';
+      status.textContent=`✅ ${newLogs.length}件を確認（追加：${addCount}件、重複スキップ：${skipCount}件）`;
+      btn.style.display='block';
+    }catch(err){
+      status.className='import-status err'; status.style.display='block';
+      status.textContent='❌ 読み込めませんでした。ChocoLogのバックアップファイルか確認してください。';
+    }
+  };
+  reader.readAsText(input.files[0]);
+}
+
+function importBackup(){
+  if(!_importData||!_importData.logs)return;
+  if(!confirm('データを読み込みますか？\n（既存データに追加されます。重複はスキップします）'))return;
+  const existIds=new Set(logs.map(l=>l.id));
+  let added=0;
+  _importData.logs.forEach(l=>{
+    if(l.id&&l.date&&l.machine&&!existIds.has(l.id)){
+      logs.push(l); existIds.add(l.id); added++;
+    }
+  });
+  logs.sort((a,b)=>a.date===b.date?a.time.localeCompare(b.time):a.date.localeCompare(b.date));
+  // lastSel は空のときだけ引き継ぐ
+  if(_importData.lastSel&&!Object.keys(lastSel).length){
+    lastSel=_importData.lastSel; saveLastSel();
+  }
+  saveLogs();
+  const status=document.getElementById('import-status');
+  status.className='import-status ok'; status.style.display='block';
+  status.textContent=`✅ ${added}件を追加しました。履歴タブで確認できます。`;
+  document.getElementById('btn-import').style.display='none';
+  document.getElementById('import-file-input').value='';
+  _importData=null;
+  renderTodayLogs();
 }
 
 // Init
