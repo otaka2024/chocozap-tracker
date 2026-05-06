@@ -817,9 +817,12 @@ body {
 
 <header class="app-header">
   <div class="app-logo">ChocoLog <span>広島八木店</span></div>
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
     <div class="header-date" id="header-date"></div>
-    <div style="font-size:10px;color:var(--text3)" id="ver-label"></div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div style="font-size:10px;color:var(--text3)" id="ver-label"></div>
+      <button id="update-btn" onclick="checkForUpdate()" style="font-size:10px;color:var(--text3);background:transparent;border:1px solid var(--border);border-radius:5px;padding:2px 6px;cursor:pointer;font-family:inherit">🔄 更新</button>
+    </div>
   </div>
 </header>
 
@@ -1070,7 +1073,7 @@ body {
 </nav>
 
 <script>
-const APP_VER = '1.2.1';
+const APP_VER = '1.2.2';
 
 const MACHINES=[
   {id:'leg',     name:'レッグプレス',     icon:'🦵', type:'weight', max:100, color:'purple'},
@@ -2025,6 +2028,20 @@ renderTodayLogs();
 
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+async function checkForUpdate(){
+  const btn=document.getElementById('update-btn');
+  btn.textContent='確認中…'; btn.disabled=true;
+  try{
+    if('serviceWorker' in navigator){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg) await reg.update();
+    }
+    const keys=await caches.keys();
+    await Promise.all(keys.map(k=>caches.delete(k)));
+    window.location.reload(true);
+  }catch(e){ window.location.reload(true); }
 }
 </script>
 </body>
