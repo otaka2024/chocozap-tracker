@@ -2017,8 +2017,7 @@ MACHINES.forEach(m=>{
   const b=document.createElement('button');b.className='machine-btn';
   const c=m.color||'blue';
   b.style.cssText=`border-color:var(--mc-${c}-bd)`;
-  const iconImg=`<img src="icons_new/${m.id}.png" alt="${m.name}" onerror="this.outerHTML='${MACHINE_SVGS[m.id]||m.icon}'">`;
-  b.innerHTML=`<span class="machine-icon">${iconImg}</span><span style="color:var(--mc-${c}-tx)">${m.name}</span>`;
+  b.innerHTML=`<span class="machine-icon"><img src="icons_new/${m.id}.png" alt="${m.name}"></span><span style="color:var(--mc-${c}-tx)">${m.name}</span>`;
   b.onclick=()=>pickMachine(m,b);mg.appendChild(b);
 });
 const now=new Date();
