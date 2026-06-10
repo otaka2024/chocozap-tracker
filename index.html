@@ -1240,9 +1240,19 @@ const SETS=[1,2,3,4,5];
 function makeWeights(max){const a=[];for(let v=5;v<=max;v+=5)a.push(v);return a;}
 function mObj(id){return MACHINES.find(x=>x.id===id)||{icon:'',name:id,type:'weight'};}
 
-let logs=JSON.parse(localStorage.getItem('czlogs_'+APP_VER)||'[]');
+function safeParse(key,fallback){
+  try{
+    return JSON.parse(localStorage.getItem(key)||fallback);
+  }catch(e){
+    // 破損データは退避してから空で起動（パースエラーでアプリ全体が開けなくなるのを防ぐ）
+    try{localStorage.setItem(key+'_broken_'+Date.now(),localStorage.getItem(key));}catch(_){}
+    localStorage.removeItem(key);
+    return JSON.parse(fallback);
+  }
+}
+let logs=safeParse('czlogs_'+APP_VER,'[]');
 let cur={machine:null,load:null,reps:null,sets:null};
-let lastSel=JSON.parse(localStorage.getItem('czlast_'+APP_VER)||'{}');
+let lastSel=safeParse('czlast_'+APP_VER,'{}');
 let calYear,calMonth,calSelected;
 
 // 過去バージョンのデータを現バージョンに統合
@@ -1250,8 +1260,8 @@ let calYear,calMonth,calSelected;
   const ids=new Set(logs.map(l=>l.id));
   let merged=false;
   Object.keys(localStorage).forEach(k=>{
-    if(k.startsWith('czlogs_')&&k!=='czlogs_'+APP_VER){
-      const old=JSON.parse(localStorage.getItem(k)||'[]');
+    if(k.startsWith('czlogs_')&&k!=='czlogs_'+APP_VER&&!k.includes('_broken_')){
+      const old=safeParse(k,'[]');
       old.forEach(l=>{if(!ids.has(l.id)){logs.push(l);ids.add(l.id);merged=true;}});
     }
   });
@@ -1261,8 +1271,8 @@ let calYear,calMonth,calSelected;
   }
   if(!Object.keys(lastSel).length){
     Object.keys(localStorage).forEach(k=>{
-      if(k.startsWith('czlast_')&&k!=='czlast_'+APP_VER){
-        const old=JSON.parse(localStorage.getItem(k)||'{}');
+      if(k.startsWith('czlast_')&&k!=='czlast_'+APP_VER&&!k.includes('_broken_')){
+        const old=safeParse(k,'{}');
         if(Object.keys(old).length){lastSel=old;localStorage.setItem('czlast_'+APP_VER,JSON.stringify(lastSel));}
       }
     });
